@@ -1,0 +1,40 @@
+"""
+Auto Generated Service
+
+Model : {{ class_name }}
+"""
+
+from app.providers.database import db
+from app.repositories.{{ module_name }} import {{ class_name }}Repository
+
+
+class {{ class_name }}Service:
+    """
+    Business logic for {{ class_name }} resources.
+    """
+
+    def __init__(
+        self,
+        repository: {{ class_name }}Repository | None = None,
+    ) -> None:
+        self.repository = repository or {{ class_name }}Repository(db)
+
+    def list(self) -> list[dict]:
+        """List all {{ class_name }} records."""
+        return self.repository.all()
+
+    def get(self, record_id) -> dict | None:
+        """Fetch one {{ class_name }} by id."""
+        return self.repository.find(record_id)
+
+    def create(self, data: dict) -> dict | None:
+        """Create a {{ class_name }} record."""
+        return self.repository.create(data)
+
+    def update(self, record_id, data: dict) -> dict | None:
+        """Update a {{ class_name }} record."""
+        return self.repository.update(record_id, data)
+
+    def delete(self, record_id) -> bool:
+        """Delete a {{ class_name }} record."""
+        return self.repository.delete(record_id)

@@ -1,0 +1,6 @@
+name = "{{PROJECT_NAME}}"
+version = "0.1.0"
+
+backend = "fastapi"
+database = "sqlite"
+python = "3.12"

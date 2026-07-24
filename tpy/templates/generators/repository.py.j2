@@ -1,0 +1,73 @@
+"""
+Auto Generated Repository
+
+Model : {{ class_name }}
+"""
+{% if primary_type == "UUID" %}
+from uuid import uuid4
+{% endif %}
+
+
+class {{ class_name }}Repository:
+    """
+    Data-access layer for the ``{{ table_name }}`` table.
+    """
+
+    TABLE = "{{ table_name }}"
+
+    def __init__(self, db) -> None:
+        """
+        Args:
+            db: Database provider exposing fetch/execute helpers.
+        """
+        self.db = db
+
+    def all(self) -> list[dict]:
+        """Return every row in the table."""
+        return self.db.fetch_all(
+            f"SELECT * FROM {self.TABLE}"
+        )
+
+    def find(self, record_id) -> dict | None:
+        """Return a single row by primary key."""
+        return self.db.fetch_one(
+            f"SELECT * FROM {self.TABLE} WHERE {{ primary_key }} = ?",
+            (str(record_id),),
+        )
+
+    def create(self, data: dict) -> dict | None:
+        """Insert a row and return the created record."""
+        payload = dict(data)
+{% if primary_type == "UUID" %}
+        if not payload.get("{{ primary_key }}"):
+            payload["{{ primary_key }}"] = str(uuid4())
+{% endif %}
+        columns = ", ".join(payload.keys())
+        placeholders = ", ".join(["?"] * len(payload))
+        self.db.execute(
+            f"INSERT INTO {self.TABLE} ({columns}) VALUES ({placeholders})",
+            tuple(payload.values()),
+        )
+        return self.find(payload.get("{{ primary_key }}"))
+
+    def update(self, record_id, data: dict) -> dict | None:
+        """Update a row by primary key and return the result."""
+        if not data:
+            return self.find(record_id)
+
+        assignments = ", ".join(
+            f"{key} = ?" for key in data.keys()
+        )
+        self.db.execute(
+            f"UPDATE {self.TABLE} SET {assignments} WHERE {{ primary_key }} = ?",
+            (*data.values(), str(record_id)),
+        )
+        return self.find(record_id)
+
+    def delete(self, record_id) -> bool:
+        """Delete a row by primary key."""
+        self.db.execute(
+            f"DELETE FROM {self.TABLE} WHERE {{ primary_key }} = ?",
+            (str(record_id),),
+        )
+        return True

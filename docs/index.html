@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tamilPY — Schema-Driven Python Framework</title>
+<meta name="description" content="tamilPY — draft a schema, generate a layered FastAPI app. Client guide: install, build, choose your database, ship." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --cyan-1:#0f2a4a;
+    --cyan-2:#123a63;
+    --cyan-3:#194f82;
+    --ink:#f4eedd;
+    --muted:#a9c0d8;
+    --amber:#e8ab3e;
+    --rust:#d9663b;
+    --line: rgba(244,238,221,0.22);
+    --line-soft: rgba(244,238,221,0.12);
+    --radius: 2px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
+  }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(180deg, var(--cyan-1), var(--cyan-1) 40%, #0c2340 100%);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", sans-serif;
+    line-height:1.65;
+    min-height:100vh;
+    position:relative;
+  }
+
+  /* faint blueprint grid */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:0.5;
+  }
+
+  a{color:inherit;}
+
+  .wrap{width:min(1160px, calc(100% - 2.4rem)); margin:0 auto; position:relative; z-index:1;}
+
+  .mono{font-family:"IBM Plex Mono", monospace;}
+
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:0.74rem;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--amber);
+    display:flex;
+    align-items:center;
+    gap:0.55rem;
+    margin:0 0 0.9rem;
+  }
+  .eyebrow::before{
+    content:"";
+    width:1.1rem;
+    height:1px;
+    background:var(--amber);
+    display:inline-block;
+  }
+
+  /* corner registration marks */
+  .crop{
+    position:absolute;
+    width:16px;
+    height:16px;
+    z-index:2;
+    opacity:0.55;
+    pointer-events:none;
+  }
+  .crop::before,.crop::after{content:"";position:absolute;background:var(--muted);}
+  .crop::before{width:100%; height:1px; top:50%;}
+  .crop::after{height:100%; width:1px; left:50%;}
+  .crop.tl{top:14px; left:14px;}
+  .crop.tr{top:14px; right:14px;}
+  .crop.bl{bottom:14px; left:14px;}
+  .crop.br{bottom:14px; right:14px;}
+
+  /* NAV */
+  .nav{
+    position:sticky; top:0; z-index:30;
+    backdrop-filter: blur(14px);
+    background: rgba(15,42,74,0.78);
+    border-bottom:1px solid var(--line);
+  }
+  .nav .wrap{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.9rem 0;}
+  .logo{
+    display:flex; align-items:baseline; gap:0.35rem;
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:1.15rem; letter-spacing:-0.01em;
+    text-decoration:none; color:var(--ink);
+  }
+  .logo .glyph{color:var(--amber); font-size:1.05em;}
+  .navlinks{display:flex; flex-wrap:wrap; gap:1.3rem; font-size:0.86rem; font-family:"IBM Plex Mono",monospace;}
+  .navlinks a{text-decoration:none; color:var(--muted); transition:color .2s ease;}
+  .navlinks a:hover{color:var(--amber);}
+
+  /* HERO */
+  .hero{
+    position:relative;
+    padding:4.6rem 0 3.6rem;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap:2.5rem;
+    align-items:center;
+  }
+  .hero-copy h1{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700;
+    font-size:clamp(2.5rem, 4.6vw, 3.6rem);
+    line-height:1.04;
+    letter-spacing:-0.02em;
+    margin:0 0 1rem;
+  }
+  .hero-copy h1 .accent{color:var(--amber);}
+  .hero-copy p.lead{
+    color:var(--muted);
+    font-size:1.08rem;
+    max-width:34rem;
+    margin:0 0 1.6rem;
+  }
+  .cta-row{display:flex; flex-wrap:wrap; gap:0.75rem;}
+  .btn{
+    display:inline-flex; align-items:center; gap:0.5rem;
+    text-decoration:none;
+    padding:0.8rem 1.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:500; font-size:0.88rem;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    transition:transform .18s ease, background .18s ease, border-color .18s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-primary{background:var(--amber); border-color:var(--amber); color:#1c1204;}
+  .btn-primary:hover{background:#f2bd5f;}
+  .btn-ghost{background:transparent; color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--muted);}
+
+  /* blueprint diagram */
+  .blueprint{
+    position:relative;
+    border:1px solid var(--line);
+    background:rgba(9,28,50,0.55);
+    padding:0.6rem;
+  }
+  .blueprint svg{width:100%; height:auto; display:block;}
+
+  /* SECTIONS */
+  section{padding:4.6rem 0; border-bottom:1px solid var(--line); position:relative;}
+  section:last-of-type{border-bottom:none;}
+  h2{
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700;
+    font-size:clamp(1.7rem, 3.2vw, 2.25rem);
+    letter-spacing:-0.015em;
+    margin:0 0 0.55rem;
+  }
+  .lead{margin:0; color:var(--muted); max-width:36rem; font-size:1.02rem;}
+  .section-head{margin-bottom:2.2rem;}
+
+  .grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));}
+
+  .tile{
+    position:relative;
+    padding:1.4rem 1.3rem;
+    background:linear-gradient(160deg, rgba(25,79,130,0.35), rgba(15,42,74,0.35));
+    border:1px solid var(--line);
+    transition:border-color .2s ease, transform .2s ease;
+  }
+  .tile:hover{border-color:var(--amber); transform:translateY(-3px);}
+  .tile .tag{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:0.7rem;
+    letter-spacing:0.1em;
+    color:var(--amber);
+    text-transform:uppercase;
+    display:block;
+    margin-bottom:0.5rem;
+  }
+  .tile h3{margin:0 0 0.4rem; font-size:1.03rem; font-weight:600; font-family:"Space Grotesk", sans-serif;}
+  .tile p, .tile li{margin:0; color:var(--muted); font-size:0.94rem;}
+  .tile ul{margin:0; padding-left:1.05rem; display:grid; gap:0.4rem;}
+  .tile code{color:var(--amber); font-family:"IBM Plex Mono", monospace; font-size:0.88em;}
+
+  /* code blocks */
+  pre{
+    background:#081c33;
+    border:1px solid var(--line);
+    padding:1.05rem 1.2rem;
+    overflow-x:auto;
+    margin:0 0 0.9rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:0.88rem;
+    color:#cfe6d4;
+    border-left:2px solid var(--amber);
+  }
+  pre .prompt{color:var(--amber);}
+  .install-stack{display:grid; gap:0.9rem; max-width:640px;}
+
+  /* FLOW / build sequence */
+  .flow{display:grid; gap:0;}
+  .flow-item{
+    display:grid;
+    grid-template-columns: 5.2rem 1fr;
+    gap:1.2rem;
+    padding:1.5rem 0;
+    border-top:1px solid var(--line);
+  }
+  .flow-item:last-child{border-bottom:1px solid var(--line);}
+  .flow-step{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:0.78rem;
+    letter-spacing:0.06em;
+    color:var(--amber);
+    padding-top:0.15rem;
+  }
+  .flow-step .n{display:block; font-family:"Space Grotesk", sans-serif; font-size:1.5rem; font-weight:700; color:var(--ink); line-height:1;}
+  .flow-item h3{margin:0 0 0.3rem; font-size:1.05rem; font-family:"Space Grotesk", sans-serif;}
+  .flow-item p{margin:0; color:var(--muted);}
+  .flow-item code{color:var(--amber); font-family:"IBM Plex Mono", monospace;}
+
+  /* AUTHOR / spec plate */
+  .plate{
+    display:grid;
+    grid-template-columns: minmax(150px, 190px) 1fr;
+    gap:2rem;
+    align-items:center;
+    padding:1.6rem;
+    border:1px solid var(--line);
+    background:linear-gradient(135deg, rgba(232,171,62,0.07), rgba(15,42,74,0.4));
+  }
+  .avatar-frame{
+    position:relative;
+    aspect-ratio:1;
+    border:1px solid var(--amber);
+    padding:6px;
+  }
+  .avatar-frame::before, .avatar-frame::after{
+    content:""; position:absolute; width:8px; height:8px; border:1px solid var(--amber); background:var(--cyan-1);
+  }
+  .avatar-frame::before{top:-4px; left:-4px;}
+  .avatar-frame::after{bottom:-4px; right:-4px;}
+  .avatar-frame img{width:100%; height:100%; object-fit:cover; object-position:center 25%; display:block;}
+  .avatar-fallback{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Space Grotesk", sans-serif;
+    font-weight:700; font-size:2.4rem; color:var(--amber);
+    background:#081c33;
+  }
+  .plate-copy .name{
+    font-family:"Space Grotesk", sans-serif; font-weight:700;
+    font-size:clamp(1.35rem, 2.6vw, 1.75rem); letter-spacing:-0.02em; margin:0 0 0.2rem;
+  }
+  .plate-copy .role{margin:0 0 0.8rem; color:var(--amber); font-family:"IBM Plex Mono", monospace; font-size:0.85rem; letter-spacing:0.04em;}
+  .plate-copy p{margin:0; color:var(--muted); max-width:36rem;}
+  .plate-copy .site{
+    display:inline-block; margin-top:1rem; text-decoration:none;
+    font-family:"IBM Plex Mono", monospace; font-size:0.85rem;
+    color:var(--ink); border-bottom:1px solid var(--amber); padding-bottom:0.15rem;
+  }
+
+  footer{
+    padding:1.8rem 0 2.6rem;
+    color:var(--muted);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:0.8rem;
+    display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.6rem;
+  }
+  footer a{text-decoration:none; border-bottom:1px solid rgba(232,171,62,0.5); color:var(--ink);}
+
+  :focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+
+  @media (max-width: 860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .plate{grid-template-columns:1fr; text-align:left;}
+    .avatar-frame{max-width:170px;}
+    .flow-item{grid-template-columns:3.4rem 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top"><span class="glyph">தமிழ்</span>PY</a>
+    <div class="navlinks">
+      <a href="#usecases">Use cases</a>
+      <a href="#install">Install</a>
+      <a href="#flow">Build sequence</a>
+      <a href="#guide">Guide</a>
+      <a href="#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Schema-driven Python framework</p>
+        <h1>Draft the schema.<br>Ship the <span class="accent">API</span>.</h1>
+        <p class="lead">tamilPY reads one <code class="mono">schema.tpy</code> file and generates a fully layered FastAPI app — models, migrations, services, and routes — for SQLite, PostgreSQL, MySQL, or MongoDB. You write the fields. It writes the plumbing.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#install">$ pip install tamilPY</a>
+          <a class="btn btn-ghost" href="#flow">See the build sequence</a>
+        </div>
+      </div>
+
+      <div class="blueprint" role="img" aria-label="Diagram: a schema definition on the left transforms through a dashed connector into four generated application layers on the right — repository, service, controller, and route.">
+        <svg viewBox="0 0 560 420" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#e8ab3e"/>
+            </marker>
+          </defs>
+
+          <!-- frame ticks -->
+          <line x1="8" y1="8" x2="8" y2="24" stroke="#a9c0d8" stroke-width="1"/>
+          <line x1="8" y1="8" x2="24" y2="8" stroke="#a9c0d8" stroke-width="1"/>
+          <line x1="552" y1="412" x2="552" y2="396" stroke="#a9c0d8" stroke-width="1"/>
+          <line x1="552" y1="412" x2="536" y2="412" stroke="#a9c0d8" stroke-width="1"/>
+
+          <text x="20" y="34" fill="#e8ab3e" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="1">FIG. 01 — SCHEMA TO API</text>
+
+          <!-- schema box -->
+          <rect x="20" y="56" width="220" height="230" fill="#081c33" stroke="#f4eedd" stroke-opacity="0.35"/>
+          <text x="34" y="80" fill="#a9c0d8" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1">INPUT — schema.tpy</text>
+          <text x="34" y="108" fill="#f4eedd" font-family="IBM Plex Mono, monospace" font-size="12">model User {</text>
+          <text x="46" y="128" fill="#cfe6d4" font-family="IBM Plex Mono, monospace" font-size="12">id: uuid primary</text>
+          <text x="46" y="148" fill="#cfe6d4" font-family="IBM Plex Mono, monospace" font-size="12">name: string required</text>
+          <text x="46" y="168" fill="#cfe6d4" font-family="IBM Plex Mono, monospace" font-size="12">email: string unique</text>
+          <text x="46" y="188" fill="#cfe6d4" font-family="IBM Plex Mono, monospace" font-size="12">age: int</text>
+          <text x="34" y="208" fill="#f4eedd" font-family="IBM Plex Mono, monospace" font-size="12">}</text>
+          <text x="34" y="256" fill="#a9c0d8" font-family="IBM Plex Mono, monospace" font-size="10">$ tpy build</text>
+
+          <!-- dashed connector -->
+          <line x1="240" y1="171" x2="330" y2="171" stroke="#e8ab3e" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#arrow)"/>
+
+          <!-- output layers (elevation) -->
+          <g font-family="IBM Plex Mono, monospace" font-size="11">
+            <rect x="335" y="60" width="205" height="42" fill="none" stroke="#f4eedd" stroke-opacity="0.5"/>
+            <text x="348" y="86" fill="#f4eedd">Route</text>
+            <line x1="335" y1="102" x2="325" y2="102" stroke="#a9c0d8" stroke-width="1"/>
+
+            <rect x="335" y="107" width="205" height="42" fill="none" stroke="#f4eedd" stroke-opacity="0.5"/>
+            <text x="348" y="133" fill="#f4eedd">Controller</text>
+
+            <rect x="335" y="154" width="205" height="42" fill="none" stroke="#f4eedd" stroke-opacity="0.5"/>
+            <text x="348" y="180" fill="#f4eedd">Service</text>
+
+            <rect x="335" y="201" width="205" height="42" fill="none" stroke="#f4eedd" stroke-opacity="0.5"/>
+            <text x="348" y="227" fill="#f4eedd">Repository</text>
+
+            <rect x="335" y="248" width="205" height="38" fill="#e8ab3e" fill-opacity="0.12" stroke="#e8ab3e"/>
+            <text x="348" y="272" fill="#e8ab3e">Database</text>
+          </g>
+          <text x="335" y="304" fill="#a9c0d8" font-size="10">OUTPUT — /health · CRUD routes</text>
+
+          <!-- scale bar -->
+          <line x1="20" y1="360" x2="120" y2="360" stroke="#a9c0d8" stroke-width="1"/>
+          <line x1="20" y1="355" x2="20" y2="365" stroke="#a9c0d8" stroke-width="1"/>
+          <line x1="120" y1="355" x2="120" y2="365" stroke="#a9c0d8" stroke-width="1"/>
+          <text x="20" y="380" fill="#a9c0d8" font-family="IBM Plex Mono, monospace" font-size="9">SCALE — SCHEMA : API = 1 : 1</text>
+
+          <text x="335" y="380" fill="#a9c0d8" font-family="IBM Plex Mono, monospace" font-size="9">SQLite · PostgreSQL · MySQL · MongoDB</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="usecases">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Where it fits</p>
+      <h2>Use cases</h2>
+      <p class="lead">Built for developers who'd rather write a schema once than write the same CRUD boilerplate again.</p>
+    </div>
+    <div class="grid">
+      <article class="tile">
+        <span class="tag">Speed</span>
+        <h3>Startup MVPs</h3>
+        <p>Turn one schema file into a running API in minutes, before the idea gets cold.</p>
+      </article>
+      <article class="tile">
+        <span class="tag">Consistency</span>
+        <h3>Internal tools</h3>
+        <p>Every project gets the same models, migrations, services, and routes — no drift between teams.</p>
+      </article>
+      <article class="tile">
+        <span class="tag">Learning</span>
+        <h3>Learning FastAPI</h3>
+        <p>Read a clean, layered architecture: repository → service → controller → route, generated in the open.</p>
+      </article>
+      <article class="tile">
+        <span class="tag">Flexibility</span>
+        <h3>Multi-database apps</h3>
+        <p>Pick SQLite, PostgreSQL, MySQL, or MongoDB at build time. Switch later with one command.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Getting started</p>
+      <h2>Install</h2>
+      <p class="lead">Install from PyPI, then scaffold your first project.</p>
+    </div>
+    <div class="install-stack">
+      <pre><span class="prompt">$</span> pip install tamilPY</pre>
+      <pre><span class="prompt">$</span> tpy new myapp
+<span class="prompt">$</span> cd myapp</pre>
+    </div>
+  </div>
+</section>
+
+<section id="flow">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Revision 01</p>
+      <h2>The build sequence</h2>
+      <p class="lead">The exact path an application developer follows, start to serve.</p>
+    </div>
+    <div class="flow">
+      <div class="flow-item">
+        <div class="flow-step"><span class="n">01</span>SCOPE</div>
+        <div>
+          <h3>Create the app</h3>
+          <p><code>tpy new myapp</code> scaffolds folders, <code>schema.tpy</code>, the logger, and seed files.</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-step"><span class="n">02</span>DRAFT</div>
+        <div>
+          <h3>Edit the schema</h3>
+          <p>Define models and fields in <code>schema.tpy</code> — types, primary keys, required, unique.</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-step"><span class="n">03</span>BUILD</div>
+        <div>
+          <h3>Build &amp; choose database</h3>
+          <p><code>tpy build</code> asks for SQLite, PostgreSQL, MySQL, or MongoDB, then host, port, user, and password — and writes <code>.env</code> for you.</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-step"><span class="n">04</span>APPLY</div>
+        <div>
+          <h3>Migrate + seed</h3>
+          <p>Run <code>tpy migrate</code>, then <code>tpy seed</code>, to apply the schema and load sample data.</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-step"><span class="n">05</span>SERVE</div>
+        <div>
+          <h3>Serve the API</h3>
+          <p><code>tpy serve</code> starts FastAPI. Logs stream to the console and to <code>storage/logs/app.log</code>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="guide">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Reference sheet</p>
+      <h2>Useful guide</h2>
+      <p class="lead">The commands you'll reach for every day.</p>
+    </div>
+    <div class="grid">
+      <article class="tile">
+        <span class="tag">Sheet 01</span>
+        <h3>Project</h3>
+        <ul>
+          <li><code>tpy new &lt;name&gt;</code> — create project</li>
+          <li><code>tpy build</code> — DB wizard + generate CRUD</li>
+          <li><code>tpy build --skip-db</code> — use existing .env</li>
+          <li><code>tpy doctor</code> — validate project health</li>
+        </ul>
+      </article>
+      <article class="tile">
+        <span class="tag">Sheet 02</span>
+        <h3>Database</h3>
+        <ul>
+          <li><code>tpy db configure</code> — change DB anytime</li>
+          <li><code>tpy migrate</code> — apply migrations</li>
+          <li><code>tpy migrate rollback</code> — undo latest</li>
+          <li><code>tpy seed</code> — run <code>database/seeds</code></li>
+        </ul>
+      </article>
+      <article class="tile">
+        <span class="tag">Sheet 03</span>
+        <h3>Runtime</h3>
+        <ul>
+          <li><code>tpy serve</code> — start API server</li>
+          <li><code>app/logger.py</code> — client logger</li>
+          <li><code>storage/logs/app.log</code> — log file</li>
+          <li><code>/health</code> — health endpoint</li>
+        </ul>
+      </article>
+      <article class="tile">
+        <span class="tag">Sheet 04</span>
+        <h3>Example schema</h3>
+        <pre style="margin:0; padding:0.8rem; font-size:0.82rem;">model User {
+  id: uuid primary
+  name: string required
+  email: string unique
+  age: int
+}</pre>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="author">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Spec plate</p>
+      <h2>Author</h2>
+      <p class="lead">The person behind tamilPY.</p>
+    </div>
+    <div class="plate">
+      <div class="avatar-frame">
+        <img
+          src="selva.png"
+          alt="Selvaganapathi Arumugam"
+          onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'avatar-fallback',textContent:'SA'}))"
+        />
+      </div>
+      <div class="plate-copy">
+        <p class="name">Selvaganapathi Arumugam</p>
+        <p class="role">SOFTWARE DEVELOPER — CREATOR, TAMILPY</p>
+        <p>Builds tamilPY (TPY Framework), focused on practical developer experience, clean layered architecture, and schema-first application generation.</p>
+        <a class="site" href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">→ View portfolio</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.6rem;">
+    <span>tamilPY Framework · Client guide · REV 02</span>
+    <span>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

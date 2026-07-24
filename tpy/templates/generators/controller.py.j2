@@ -1,0 +1,59 @@
+"""
+Auto Generated Controller
+
+Model : {{ class_name }}
+"""
+
+from fastapi import HTTPException
+
+from app.schemas.{{ module_name }} import (
+    {{ class_name }}Create,
+    {{ class_name }}Update,
+)
+from app.services.{{ module_name }} import {{ class_name }}Service
+
+
+class {{ class_name }}Controller:
+    """
+    HTTP handlers for {{ class_name }} endpoints.
+    """
+
+    def __init__(
+        self,
+        service: {{ class_name }}Service | None = None,
+    ) -> None:
+        self.service = service or {{ class_name }}Service()
+
+    def index(self) -> list[dict]:
+        """Return all records."""
+        return self.service.list()
+
+    def show(self, record_id) -> dict:
+        """Return one record or raise 404."""
+        record = self.service.get(record_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="{{ class_name }} not found")
+        return record
+
+    def store(self, payload: {{ class_name }}Create) -> dict:
+        """Create a record from a validated payload."""
+        record = self.service.create(payload.model_dump(exclude_none=True))
+        if record is None:
+            raise HTTPException(status_code=400, detail="Unable to create {{ class_name }}")
+        return record
+
+    def update(self, record_id, payload: {{ class_name }}Update) -> dict:
+        """Update a record from a validated payload."""
+        data = payload.model_dump(exclude_none=True)
+        record = self.service.update(record_id, data)
+        if record is None:
+            raise HTTPException(status_code=404, detail="{{ class_name }} not found")
+        return record
+
+    def destroy(self, record_id) -> dict:
+        """Delete a record."""
+        existing = self.service.get(record_id)
+        if existing is None:
+            raise HTTPException(status_code=404, detail="{{ class_name }} not found")
+        self.service.delete(record_id)
+        return {"deleted": True, "id": record_id}

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tamilPY"
+version = "0.1.0"
+description = "TamilPY Framework — schema-driven Python web framework"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "TPY Contributors" }
+]
+dependencies = [
+    "typer",
+    "jinja2",
+    "rich",
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy",
+    "pydantic",
+    "motor",
+    "pymongo",
+    "psycopg2-binary",
+    "pymysql",
+]
+
+[project.scripts]
+tpy = "tpy.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["tpy*"]
+
+[tool.setuptools.package-data]
+tpy = ["templates/**/*"]

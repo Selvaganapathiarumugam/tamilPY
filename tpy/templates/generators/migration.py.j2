@@ -1,0 +1,25 @@
+"""
+Auto Generated Migration
+
+Model : {{ model_name }}
+Table : {{ table_name }}
+"""
+
+from tpy.database import Migration
+
+
+class {{ model_name }}Migration(Migration):
+
+    def up(self):
+
+        self.create_table("{{ table_name }}")
+{% for column in columns %}
+        self.column(
+            name="{{ column.name }}",
+            datatype="{{ column.datatype }}",
+        ){{ column.chain }}
+{% endfor %}
+
+    def down(self):
+
+        self.drop_table("{{ table_name }}")

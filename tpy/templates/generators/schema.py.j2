@@ -1,0 +1,47 @@
+from pydantic import BaseModel
+
+{% if imports %}
+{% for item in imports %}
+from {{ item.module }} import {{ item.name }}
+{% endfor %}
+{% endif %}
+
+
+class {{ class_name }}Create(BaseModel):
+{% if create_fields %}
+{% for field in create_fields %}
+{% if field.optional %}
+    {{ field.name }}: {{ field.type }} | None = None
+{% else %}
+    {{ field.name }}: {{ field.type }}
+{% endif %}
+{% endfor %}
+{% else %}
+    pass
+{% endif %}
+
+
+class {{ class_name }}Update(BaseModel):
+{% if update_fields %}
+{% for field in update_fields %}
+    {{ field.name }}: {{ field.type }} | None = None
+{% endfor %}
+{% else %}
+    pass
+{% endif %}
+
+
+class {{ class_name }}Response(BaseModel):
+{% if response_fields %}
+{% for field in response_fields %}
+{% if field.optional %}
+    {{ field.name }}: {{ field.type }} | None = None
+{% else %}
+    {{ field.name }}: {{ field.type }}
+{% endif %}
+{% endfor %}
+
+    model_config = {"from_attributes": True}
+{% else %}
+    pass
+{% endif %}

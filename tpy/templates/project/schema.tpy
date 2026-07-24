@@ -1,0 +1,11 @@
+model User {
+
+    id: uuid primary
+
+    name: string required
+
+    email: string unique
+
+    age: int
+
+}

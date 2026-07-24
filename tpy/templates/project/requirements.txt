@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+jinja2
+typer
+rich
+sqlalchemy
+tamilPY
