@@ -34,7 +34,7 @@ pip install tamilPY
 
 ## Docs
 
-Open [`docs/index.html`](docs/index.html) for the full client guide.
+Open [TamilPY](https://selvaganapathiarumugam.github.io/tamilPY/) for the full client guide.
 
 ## Author
 
