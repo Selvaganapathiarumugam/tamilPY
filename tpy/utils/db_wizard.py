@@ -80,6 +80,20 @@ class DatabaseWizard:
         self._update_toml(choice.provider)
         self._update_schema(choice.provider)
         Console.success("Database configuration saved to .env and tpy.toml")
+        self._try_create_database()
+
+    def _try_create_database(self) -> None:
+        """Create the configured database immediately when possible."""
+        try:
+            from tpy.providers.factory import get_provider
+
+            provider = get_provider(project_root=self.project_root)
+            provider.ensure_database()
+            provider.close()
+        except Exception as error:
+            Console.warning(
+                f"Database will be created on migrate: {error}"
+            )
 
     def _resolve_provider(self, selection: str) -> str:
         for key, provider, _ in self.OPTIONS:

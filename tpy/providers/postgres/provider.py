@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any
 
 from tpy.providers.base import BaseProvider
+from tpy.utils.console import Console
 
 
 class PostgresProvider(BaseProvider):
@@ -21,6 +22,48 @@ class PostgresProvider(BaseProvider):
         "uuid": "UUID",
         "datetime": "TIMESTAMP",
     }
+
+    def ensure_database(self) -> None:
+        """Create the PostgreSQL database when it does not exist."""
+        if not self.database_url:
+            return
+
+        from sqlalchemy import create_engine, text
+        from sqlalchemy.engine.url import make_url
+
+        url = make_url(self.database_url)
+        db_name = url.database
+        if not db_name:
+            return
+
+        last_error: Exception | None = None
+        for maintenance_db in ("postgres", "template1"):
+            admin_url = url.set(database=maintenance_db)
+            engine = create_engine(admin_url, isolation_level="AUTOCOMMIT")
+            try:
+                with engine.connect() as connection:
+                    exists = connection.execute(
+                        text(
+                            "SELECT 1 FROM pg_database WHERE datname = :name"
+                        ),
+                        {"name": db_name},
+                    ).scalar()
+                    if exists:
+                        return
+                    quoted = self.quote_identifier(db_name)
+                    connection.execute(text(f"CREATE DATABASE {quoted}"))
+                    Console.success(f"Created database: {db_name}")
+                    return
+            except Exception as error:
+                last_error = error
+            finally:
+                engine.dispose()
+
+        raise RuntimeError(
+            f"Could not create database '{db_name}'. "
+            "Check Postgres is running and the user can CREATE DATABASE. "
+            f"Details: {last_error}"
+        )
 
     def connect(self) -> Any:
         """Create a SQLAlchemy connection."""

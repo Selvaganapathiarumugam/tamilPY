@@ -505,6 +505,7 @@
           <li><code>tpy new &lt;name&gt;</code> — create project</li>
           <li><code>tpy build</code> — DB wizard + generate CRUD</li>
           <li><code>tpy build --skip-db</code> — use existing .env</li>
+          <li><code>tpy crud</code> — regenerate CRUD from schema</li>
           <li><code>tpy doctor</code> — validate project health</li>
         </ul>
       </article>
@@ -513,7 +514,7 @@
         <h3>Database</h3>
         <ul>
           <li><code>tpy db configure</code> — change DB anytime</li>
-          <li><code>tpy migrate</code> — apply migrations</li>
+          <li><code>tpy migrate</code> — create DB if needed + migrate</li>
           <li><code>tpy migrate rollback</code> — undo latest</li>
           <li><code>tpy seed</code> — run <code>database/seeds</code></li>
         </ul>

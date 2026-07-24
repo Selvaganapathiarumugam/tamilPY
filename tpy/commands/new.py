@@ -58,14 +58,17 @@ def register(app: typer.Typer):
             "tests",
         ]
 
+        # Template filename → project filename.
+        # Dotfiles use non-hidden template names so setuptools includes them in PyPI wheels.
         templates = [
-            "README.md",
-            "main.py",
-            "schema.tpy",
-            "tpy.toml",
-            ".env",
-            ".gitignore",
-            "requirements.txt",
+            ("README.md", "README.md"),
+            ("main.py", "app/main.py"),
+            ("run_main.py", "main.py"),
+            ("schema.tpy", "schema.tpy"),
+            ("tpy.toml", "tpy.toml"),
+            ("env", ".env"),
+            ("gitignore", ".gitignore"),
+            ("requirements.txt", "requirements.txt"),
         ]
 
         Console.info(f"Creating project '{project_name}'...")
@@ -84,13 +87,13 @@ def register(app: typer.Typer):
             "VERSION": "0.1.0",
         }
 
-        for template in templates:
+        for template_name, output_name in templates:
             content = engine.render(
-                f"project/{template}",
+                f"project/{template_name}",
                 context,
             )
             FileManager.write(
-                root / template,
+                root / output_name,
                 content,
             )
 

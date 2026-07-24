@@ -22,16 +22,24 @@ class {{ class_name }}Repository:
         """
         self.db = db
 
+    def _table(self) -> str:
+        """Return the dialect-quoted table name."""
+        return self.db.quote_identifier(self.TABLE)
+
+    def _column(self, name: str) -> str:
+        """Return a dialect-quoted column name."""
+        return self.db.quote_identifier(name)
+
     def all(self) -> list[dict]:
         """Return every row in the table."""
         return self.db.fetch_all(
-            f"SELECT * FROM {self.TABLE}"
+            f"SELECT * FROM {self._table()}"
         )
 
     def find(self, record_id) -> dict | None:
         """Return a single row by primary key."""
         return self.db.fetch_one(
-            f"SELECT * FROM {self.TABLE} WHERE {{ primary_key }} = ?",
+            f"SELECT * FROM {self._table()} WHERE {self._column('{{ primary_key }}')} = ?",
             (str(record_id),),
         )
 
@@ -42,10 +50,10 @@ class {{ class_name }}Repository:
         if not payload.get("{{ primary_key }}"):
             payload["{{ primary_key }}"] = str(uuid4())
 {% endif %}
-        columns = ", ".join(payload.keys())
+        columns = ", ".join(self._column(key) for key in payload.keys())
         placeholders = ", ".join(["?"] * len(payload))
         self.db.execute(
-            f"INSERT INTO {self.TABLE} ({columns}) VALUES ({placeholders})",
+            f"INSERT INTO {self._table()} ({columns}) VALUES ({placeholders})",
             tuple(payload.values()),
         )
         return self.find(payload.get("{{ primary_key }}"))
@@ -56,10 +64,10 @@ class {{ class_name }}Repository:
             return self.find(record_id)
 
         assignments = ", ".join(
-            f"{key} = ?" for key in data.keys()
+            f"{self._column(key)} = ?" for key in data.keys()
         )
         self.db.execute(
-            f"UPDATE {self.TABLE} SET {assignments} WHERE {{ primary_key }} = ?",
+            f"UPDATE {self._table()} SET {assignments} WHERE {self._column('{{ primary_key }}')} = ?",
             (*data.values(), str(record_id)),
         )
         return self.find(record_id)
@@ -67,7 +75,7 @@ class {{ class_name }}Repository:
     def delete(self, record_id) -> bool:
         """Delete a row by primary key."""
         self.db.execute(
-            f"DELETE FROM {self.TABLE} WHERE {{ primary_key }} = ?",
+            f"DELETE FROM {self._table()} WHERE {self._column('{{ primary_key }}')} = ?",
             (str(record_id),),
         )
         return True

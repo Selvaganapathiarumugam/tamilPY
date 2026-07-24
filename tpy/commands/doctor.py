@@ -19,6 +19,7 @@ def register(app: typer.Typer) -> None:
             "schema.tpy",
             "tpy.toml",
             "main.py",
+            "app/main.py",
             "app",
             "app/logger.py",
             "database",

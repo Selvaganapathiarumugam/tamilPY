@@ -68,8 +68,10 @@ def register(app: typer.Typer) -> None:
 
 def _run_migrate() -> None:
     try:
-        Console.info("Running migrations...")
         provider = get_provider(project_root=Path("."))
+        Console.info("Ensuring database exists...")
+        provider.ensure_database()
+        Console.info("Running migrations...")
         applied = provider.migrate()
         provider.close()
 

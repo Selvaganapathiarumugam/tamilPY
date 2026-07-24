@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from tpy.config.loader import ConfigLoader
 from tpy.generator.controller_generator import ControllerGenerator
 from tpy.generator.migration_generator import MigrationGenerator
 from tpy.generator.model_generator import ModelGenerator
@@ -50,7 +51,18 @@ class CrudGenerator:
             generator.generate(ast)
 
     def ensure_project_helpers(self) -> None:
-        """Create database provider, logger, and seed scaffolding when missing."""
+        """Create app entrypoint, provider, logger, and seed scaffolding when missing."""
+        project_name = self._project_name()
+
+        self._ensure_file(
+            self.project_root / "app" / "main.py",
+            "project/main.py",
+            {"PROJECT_NAME": project_name},
+        )
+        self._ensure_file(
+            self.project_root / "main.py",
+            "project/run_main.py",
+        )
         self._ensure_file(
             self.project_root / "app" / "providers" / "database.py",
             "project/app_providers_database.py",
@@ -78,9 +90,23 @@ class CrudGenerator:
         FileManager.create_directory(
             self.project_root / "storage" / "logs"
         )
+    def _project_name(self) -> str:
+        """Resolve project display name for templates."""
+        try:
+            settings = ConfigLoader(self.project_root).load()
+            if settings.name:
+                return settings.name
+        except Exception:
+            pass
+        return self.project_root.resolve().name
 
-    def _ensure_file(self, output: Path, template_name: str) -> None:
+    def _ensure_file(
+        self,
+        output: Path,
+        template_name: str,
+        context: dict | None = None,
+    ) -> None:
         if FileManager.exists(output):
             return
-        content = self.template.render(template_name, {})
+        content = self.template.render(template_name, context or {})
         FileManager.write(output, content)

@@ -22,6 +22,54 @@ class MySQLProvider(BaseProvider):
         "datetime": "DATETIME",
     }
 
+    def quote_identifier(self, name: str) -> str:
+        """Quote a MySQL identifier with backticks."""
+        escaped = str(name).replace("`", "``")
+        return f"`{escaped}`"
+
+    def ensure_database(self) -> None:
+        """Create the MySQL database when it does not exist."""
+        if not self.database_url:
+            return
+
+        from sqlalchemy import create_engine, text
+        from sqlalchemy.engine.url import make_url
+
+        from tpy.utils.console import Console
+
+        url = make_url(self.database_url)
+        db_name = url.database
+        if not db_name:
+            return
+
+        # Connect without a default schema so CREATE DATABASE is allowed.
+        admin_url = url.set(database=None)
+        engine = create_engine(admin_url, isolation_level="AUTOCOMMIT")
+        try:
+            with engine.connect() as connection:
+                quoted = self.quote_identifier(db_name)
+                result = connection.execute(
+                    text(
+                        "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA "
+                        "WHERE SCHEMA_NAME = :name"
+                    ),
+                    {"name": db_name},
+                ).scalar()
+                if result:
+                    return
+                connection.execute(
+                    text(f"CREATE DATABASE {quoted}")
+                )
+                Console.success(f"Created database: {db_name}")
+        except Exception as error:
+            raise RuntimeError(
+                f"Could not create database '{db_name}'. "
+                "Check MySQL is running and the user can CREATE DATABASE. "
+                f"Details: {error}"
+            ) from error
+        finally:
+            engine.dispose()
+
     def connect(self) -> Any:
         """Create a SQLAlchemy connection."""
         if self.connection is not None:

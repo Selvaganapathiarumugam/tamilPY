@@ -1,5 +1,3 @@
-tpy/templates/project/.gitignore# tamilPY (TPY Framework)
-
 Schema-driven Python web framework by **Selvaganapathi Arumugam**.
 
 ## Install
@@ -24,8 +22,9 @@ pip install tamilPY
 | `tpy new <name>` | Create a new project |
 | `tpy build` | Interactive DB setup + generate app layers |
 | `tpy build --skip-db` | Generate using existing `.env` |
+| `tpy crud` | Regenerate CRUD layers from `schema.tpy` |
 | `tpy db configure` | Re-run DB wizard anytime |
-| `tpy migrate` | Apply pending migrations |
+| `tpy migrate` | Create DB if needed + apply migrations |
 | `tpy migrate rollback` | Roll back latest migration |
 | `tpy seed` | Run `database/seeds` |
 | `tpy serve` | Start FastAPI server |

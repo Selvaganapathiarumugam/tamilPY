@@ -55,6 +55,14 @@ class BaseProvider(ABC):
     def fetch_one(self, sql: str, params: tuple | list | None = None) -> dict | None:
         """Execute a query and return one row as a dictionary."""
 
+    def ensure_database(self) -> None:
+        """
+        Create the target database when missing.
+
+        No-op by default. Server providers (Postgres / MySQL) override this.
+        """
+        return None
+
     def migrate(self) -> list[str]:
         """
         Run pending migrations from ``database/migrations``.
@@ -62,6 +70,7 @@ class BaseProvider(ABC):
         Returns:
             List of applied migration module names.
         """
+        self.ensure_database()
         self.connect()
         self.ensure_migrations_table()
 
@@ -190,6 +199,15 @@ class BaseProvider(ABC):
 
         raise ImportError(f"No Migration class found in {path}")
 
+    def quote_identifier(self, name: str) -> str:
+        """
+        Quote a SQL identifier for reserved words (e.g. ``user``).
+
+        Default dialect uses ANSI double quotes (Postgres / SQLite).
+        """
+        escaped = str(name).replace('"', '""')
+        return f'"{escaped}"'
+
     def compile_operations(self, operations: list[dict]) -> list[str]:
         """
         Compile migration operations into SQL statements.
@@ -209,8 +227,9 @@ class BaseProvider(ABC):
             if current_table is None:
                 return
             body = ", ".join(columns) if columns else ""
+            table = self.quote_identifier(current_table)
             statements.append(
-                f"CREATE TABLE IF NOT EXISTS {current_table} ({body})"
+                f"CREATE TABLE IF NOT EXISTS {table} ({body})"
             )
             current_table = None
             columns = []
@@ -234,9 +253,8 @@ class BaseProvider(ABC):
 
             if action == "drop_table":
                 flush_create()
-                statements.append(
-                    f"DROP TABLE IF EXISTS {operation['table']}"
-                )
+                table = self.quote_identifier(operation["table"])
+                statements.append(f"DROP TABLE IF EXISTS {table}")
 
         flush_create()
         return statements
@@ -244,7 +262,7 @@ class BaseProvider(ABC):
     def compile_column(self, column) -> str:
         """Compile a ``Column`` object into a SQL fragment."""
         sql_type = self.TYPE_MAP.get(column.datatype, "TEXT")
-        parts = [column.name, sql_type]
+        parts = [self.quote_identifier(column.name), sql_type]
         options = column.options
 
         if options.get("primary"):
