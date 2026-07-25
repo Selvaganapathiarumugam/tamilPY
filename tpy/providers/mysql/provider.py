@@ -27,6 +27,15 @@ class MySQLProvider(BaseProvider):
         escaped = str(name).replace("`", "``")
         return f"`{escaped}`"
 
+    def compile_index(self, table: str, column: str) -> str:
+        """Build a ``CREATE INDEX`` statement (MySQL has no IF NOT EXISTS)."""
+        index_name = f"idx_{table}_{column}"
+        return (
+            f"CREATE INDEX {self.quote_identifier(index_name)} "
+            f"ON {self.quote_identifier(table)} "
+            f"({self.quote_identifier(column)})"
+        )
+
     def ensure_database(self) -> None:
         """Create the MySQL database when it does not exist."""
         if not self.database_url:

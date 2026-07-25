@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tamilPY"
-version = "0.1.4"
+version = "0.1.5"
 description = "TamilPY Framework — schema-driven Python web framework"
 readme = "README.md"
 requires-python = ">=3.12"

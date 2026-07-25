@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass(slots=True)
@@ -7,10 +8,22 @@ class DatabaseNode:
 
 
 @dataclass(slots=True)
+class ForeignKeyNode:
+    """A foreign key reference to another model's column."""
+
+    model: str
+    table: str
+    column: str = "id"
+
+
+@dataclass(slots=True)
 class FieldNode:
     name: str
     datatype: str
     constraints: list[str] = field(default_factory=list)
+    default: Any = None
+    has_default: bool = False
+    reference: ForeignKeyNode | None = None
 
 
 @dataclass(slots=True)

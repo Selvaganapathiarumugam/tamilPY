@@ -28,6 +28,20 @@ class Column:
         self.options["index"] = True
         return self
 
+    def references(self, table: str, column: str = "id") -> "Column":
+        """
+        Add a foreign-key reference to ``table(column)``.
+
+        Args:
+            table: Referenced table name.
+            column: Referenced column name (defaults to ``id``).
+        """
+        self.options["references"] = {
+            "table": table,
+            "column": column,
+        }
+        return self
+
     def default(self, value) -> "Column":
         """Set a default value."""
         self.options["default"] = value

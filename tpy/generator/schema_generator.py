@@ -189,6 +189,9 @@ class SchemaGenerator:
         if "nullable" in field.constraints:
             return True
 
+        if getattr(field, "has_default", False):
+            return True
+
         if "required" in field.constraints:
             return False
 

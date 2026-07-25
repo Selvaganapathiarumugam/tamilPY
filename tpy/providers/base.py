@@ -221,9 +221,10 @@ class BaseProvider(ABC):
         statements: list[str] = []
         current_table: str | None = None
         columns: list[str] = []
+        index_columns: list[str] = []
 
         def flush_create() -> None:
-            nonlocal current_table, columns
+            nonlocal current_table, columns, index_columns
             if current_table is None:
                 return
             body = ", ".join(columns) if columns else ""
@@ -231,8 +232,13 @@ class BaseProvider(ABC):
             statements.append(
                 f"CREATE TABLE IF NOT EXISTS {table} ({body})"
             )
+            for column_name in index_columns:
+                statements.append(
+                    self.compile_index(current_table, column_name)
+                )
             current_table = None
             columns = []
+            index_columns = []
 
         for operation in operations:
             action = operation["action"]
@@ -241,14 +247,20 @@ class BaseProvider(ABC):
                 flush_create()
                 current_table = operation["table"]
                 columns = []
+                index_columns = []
                 continue
 
             if action == "column":
-                column_sql = self.compile_column(operation["column"])
+                column = operation["column"]
+                column_sql = self.compile_column(column)
                 if current_table is None:
                     statements.append(column_sql)
                 else:
                     columns.append(column_sql)
+                    if column.options.get("index") and not column.options.get(
+                        "primary"
+                    ):
+                        index_columns.append(column.name)
                 continue
 
             if action == "drop_table":
@@ -258,6 +270,22 @@ class BaseProvider(ABC):
 
         flush_create()
         return statements
+
+    def compile_index(self, table: str, column: str) -> str:
+        """
+        Build a ``CREATE INDEX`` statement for a single column.
+
+        Args:
+            table: Table name.
+            column: Column to index.
+        """
+        index_name = f"idx_{table}_{column}"
+        return (
+            f"CREATE INDEX IF NOT EXISTS "
+            f"{self.quote_identifier(index_name)} "
+            f"ON {self.quote_identifier(table)} "
+            f"({self.quote_identifier(column)})"
+        )
 
     def compile_column(self, column) -> str:
         """Compile a ``Column`` object into a SQL fragment."""
@@ -275,6 +303,12 @@ class BaseProvider(ABC):
             parts.append("NOT NULL")
         if "default" in options:
             parts.append(f"DEFAULT {self.format_default(options['default'])}")
+
+        reference = options.get("references")
+        if reference:
+            ref_table = self.quote_identifier(reference["table"])
+            ref_column = self.quote_identifier(reference["column"])
+            parts.append(f"REFERENCES {ref_table} ({ref_column})")
 
         return " ".join(parts)
 

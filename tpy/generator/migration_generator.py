@@ -13,7 +13,7 @@ class MigrationGenerator:
     for example ``001_user_migration.py``, ``002_post_migration.py``.
     """
 
-    FLUENT_CONSTRAINTS = {"primary", "unique", "nullable", "index"}
+    FLUENT_CONSTRAINTS = ("primary", "unique", "nullable", "index")
 
     def __init__(self, project_root: Path | str = ".") -> None:
         """
@@ -50,16 +50,11 @@ class MigrationGenerator:
         columns = []
 
         for field in model.fields:
-            constraints = self.map_constraints(field)
-            chain = "".join(
-                f".{constraint}()"
-                for constraint in constraints
-            )
             columns.append(
                 {
                     "name": field.name,
                     "datatype": field.datatype,
-                    "chain": chain,
+                    "chain": self.build_chain(field),
                 }
             )
 
@@ -69,21 +64,42 @@ class MigrationGenerator:
             "columns": columns,
         }
 
-    def map_constraints(self, field: FieldNode) -> list[str]:
+    def build_chain(self, field: FieldNode) -> str:
         """
-        Map AST constraints to Migration fluent method names.
+        Build the fluent ``Column`` method chain for a field.
+
+        Includes primary/unique/nullable/index constraints, a foreign-key
+        reference, and a literal default value where present.
 
         Args:
             field: Field AST node.
 
         Returns:
-            Constraint method names supported by ``Column``.
+            A string like ``.primary().references("user", "id")``.
         """
-        return [
-            constraint
-            for constraint in field.constraints
-            if constraint in self.FLUENT_CONSTRAINTS
-        ]
+        chain = ""
+
+        is_primary = "primary" in field.constraints
+
+        for constraint in self.FLUENT_CONSTRAINTS:
+            if constraint not in field.constraints:
+                continue
+            # A primary key is already indexed; skip a redundant index.
+            if constraint == "index" and is_primary:
+                continue
+            chain += f".{constraint}()"
+
+        if field.reference is not None:
+            chain += (
+                f".references("
+                f"{field.reference.table!r}, "
+                f"{field.reference.column!r})"
+            )
+
+        if field.has_default and field.default is not None:
+            chain += f".default({field.default!r})"
+
+        return chain
 
     def write_migration(
         self,

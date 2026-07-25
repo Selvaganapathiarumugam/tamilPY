@@ -1,6 +1,7 @@
 from tpy.parser.ast import (
     DatabaseNode,
     FieldNode,
+    ForeignKeyNode,
     ModelNode,
     ProgramNode,
 )
@@ -98,6 +99,9 @@ class Parser:
         ).value
 
         constraints = []
+        default_value = None
+        has_default = False
+        reference = None
 
         while True:
 
@@ -106,11 +110,26 @@ class Parser:
                 TokenType.REQUIRED,
                 TokenType.UNIQUE,
                 TokenType.NULLABLE,
+                TokenType.INDEX,
             ):
                 constraints.append(
-                    self.current().value
+                    self.current().value.lower()
                 )
                 self.advance()
+                continue
+
+            if self.match(TokenType.DEFAULT):
+                self.advance()
+                default_value = self.parse_default_value()
+                has_default = True
+                continue
+
+            if self.match(
+                TokenType.REFERENCES,
+                TokenType.FOREIGN,
+            ):
+                self.advance()
+                reference = self.parse_reference()
                 continue
 
             break
@@ -119,6 +138,58 @@ class Parser:
             name=name,
             datatype=datatype,
             constraints=constraints,
+            default=default_value,
+            has_default=has_default,
+            reference=reference,
+        )
+
+    def parse_default_value(self):
+        """
+        Parse a literal default value.
+
+        Accepts a number, quoted string, or the bare words
+        ``true`` / ``false`` / ``null``.
+        """
+        token = self.current()
+
+        if token.type == TokenType.NUMBER:
+            self.advance()
+            return int(token.value)
+
+        if token.type == TokenType.STRING:
+            self.advance()
+            return token.value
+
+        if token.type == TokenType.IDENTIFIER:
+            self.advance()
+            lowered = token.value.lower()
+            if lowered == "true":
+                return True
+            if lowered == "false":
+                return False
+            if lowered in ("null", "none"):
+                return None
+            return token.value
+
+        self.error(
+            f"Expected a default value, got {token.type.name}"
+        )
+
+    def parse_reference(self):
+        """
+        Parse a foreign-key target: ``<Model>`` or ``<Model>.<column>``.
+        """
+        model = self.consume(TokenType.IDENTIFIER).value
+        column = "id"
+
+        if self.match(TokenType.DOT):
+            self.advance()
+            column = self.consume(TokenType.IDENTIFIER).value
+
+        return ForeignKeyNode(
+            model=model,
+            table=model.lower(),
+            column=column,
         )
 
     def current(self):

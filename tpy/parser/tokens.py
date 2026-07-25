@@ -46,6 +46,9 @@ class TokenType(Enum):
     UNIQUE = auto()
     NULLABLE = auto()
     DEFAULT = auto()
+    INDEX = auto()
+    REFERENCES = auto()
+    FOREIGN = auto()
 
     # =========================
     # Symbols
@@ -102,4 +105,9 @@ KEYWORDS = {
     "unique": TokenType.UNIQUE,
     "nullable": TokenType.NULLABLE,
     "default": TokenType.DEFAULT,
+    "index": TokenType.INDEX,
+
+    # Relations
+    "references": TokenType.REFERENCES,
+    "foreign": TokenType.FOREIGN,
 }

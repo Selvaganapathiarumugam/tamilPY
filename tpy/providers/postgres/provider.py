@@ -23,6 +23,12 @@ class PostgresProvider(BaseProvider):
         "datetime": "TIMESTAMP",
     }
 
+    def format_default(self, value: Any) -> str:
+        """Format a default value; Postgres booleans need TRUE/FALSE."""
+        if isinstance(value, bool):
+            return "TRUE" if value else "FALSE"
+        return super().format_default(value)
+
     def ensure_database(self) -> None:
         """Create the PostgreSQL database when it does not exist."""
         if not self.database_url:

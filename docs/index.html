@@ -550,7 +550,7 @@
     <div class="section-head">
       <p class="eyebrow">Language reference</p>
       <h2>schema.tpy patterns</h2>
-      <p class="lead">Everything the parser accepts today — types, constraints, and multi-model examples.</p>
+      <p class="lead">Types, constraints, defaults, indexes, foreign keys, and multi-model examples.</p>
     </div>
 
     <div class="grid">
@@ -585,6 +585,9 @@ model ModelName {
           <li><code>required</code> — required in create API</li>
           <li><code>unique</code> — UNIQUE column</li>
           <li><code>nullable</code> — allow NULL / optional</li>
+          <li><code>index</code> — create an index</li>
+          <li><code>default &lt;value&gt;</code> — column default</li>
+          <li><code>references &lt;Model&gt;</code> — foreign key</li>
         </ul>
         <p style="margin-top:0.8rem;">Non-primary fields without <code>nullable</code> become <code>NOT NULL</code> in SQL.</p>
       </article>
@@ -618,19 +621,21 @@ model User {
   age: int
 }</pre>
 
-      <pre><span class="prompt"># 02 — nullable + datetime</span>
+      <pre><span class="prompt"># 02 — defaults + index</span>
 database postgres
 
 model Product {
   id: uuid primary
-  title: string required
+  title: string required index
   price: float required
-  active: bool
+  active: bool default true
+  stock: int default 0
+  status: string default "draft"
   notes: string nullable
   created_at: datetime nullable
 }</pre>
 
-      <pre><span class="prompt"># 03 — multi-model (related IDs as plain fields)</span>
+      <pre><span class="prompt"># 03 — foreign keys (references)</span>
 database postgres
 
 model User {
@@ -640,28 +645,37 @@ model User {
 
 model Post {
   id: uuid primary
-  title: string required
-  body: string
-  user_id: uuid
-  published: bool nullable
+  title: string required index
+  body: string nullable
+  user_id: uuid references User
+  published: bool default false
 }</pre>
     </div>
 
     <div class="grid" style="margin-top:1.4rem;">
       <article class="tile">
         <span class="tag">Relations</span>
-        <h3>Foreign keys — status</h3>
-        <p><strong>Not supported yet</strong> in <code>schema.tpy</code>. There is no <code>references</code>, <code>foreign</code>, or <code>belongs_to</code> keyword.</p>
-        <p style="margin-top:0.7rem;">Until relation syntax ships, store related IDs as normal fields (example: <code>user_id: uuid</code>) and enforce joins in your own service code.</p>
+        <h3>Foreign keys</h3>
+        <p>Use <code>references &lt;Model&gt;</code> (or <code>foreign &lt;Model&gt;</code>) on a field. It defaults to the target's <code>id</code>; target a column with <code>references Model.column</code>.</p>
+        <pre style="margin:0.7rem 0 0; padding:0.7rem; font-size:0.8rem;">user_id: uuid references User
+author: uuid references User.id</pre>
+        <p style="margin-top:0.7rem;">Compiles to <code>REFERENCES "user" ("id")</code>. Define the referenced model earlier in the schema so its migration runs first.</p>
       </article>
       <article class="tile">
-        <span class="tag">Not yet</span>
-        <h3>Also unavailable in schema</h3>
-        <ul>
-          <li><code>default ...</code> — lexed, not parsed</li>
-          <li><code>index</code> — not a schema keyword</li>
-          <li>Nested / relation blocks</li>
-        </ul>
+        <span class="tag">Defaults</span>
+        <h3>Default values</h3>
+        <p>Add <code>default &lt;value&gt;</code> — a number, quoted string, or <code>true</code> / <code>false</code>.</p>
+        <pre style="margin:0.7rem 0 0; padding:0.7rem; font-size:0.8rem;">stock: int default 0
+active: bool default true
+status: string default "draft"</pre>
+        <p style="margin-top:0.7rem;">Fields with a default become optional in the create API.</p>
+      </article>
+      <article class="tile">
+        <span class="tag">Indexes</span>
+        <h3>Column index</h3>
+        <p>Add the <code>index</code> keyword to generate an index:</p>
+        <pre style="margin:0.7rem 0 0; padding:0.7rem; font-size:0.8rem;">title: string required index</pre>
+        <p style="margin-top:0.7rem;">Emits <code>CREATE INDEX idx_&lt;table&gt;_&lt;column&gt;</code>. Primary keys are already indexed.</p>
       </article>
       <article class="tile">
         <span class="tag">Migrations</span>
@@ -912,7 +926,7 @@ model Post {
 
 <footer>
   <div class="wrap" style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.6rem;">
-    <span>tamilPY Framework · Client guide · REV 03</span>
+    <span>tamilPY Framework · Client guide · REV 04</span>
     <span>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></span>
   </div>
 </footer>
