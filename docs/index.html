@@ -358,6 +358,7 @@
       <a href="#flow">Build sequence</a>
       <a href="#features">Features</a>
       <a href="#admin">Admin</a>
+      <a href="#auth">Auth</a>
       <a href="#schema">Schema</a>
       <a href="#commands">Commands</a>
       <a href="#guide">Guide</a>
@@ -586,6 +587,11 @@
       </article>
       <article class="tile">
         <span class="tag">Feature 09</span>
+        <h3>JWT auth</h3>
+        <p><code>tpy auth</code> adds login, register, refresh, and logout with AuthRole + User defaults. Dashboard access is limited to super-admin and developer. <a href="#auth" style="color:var(--amber);">See auth guide →</a></p>
+      </article>
+      <article class="tile">
+        <span class="tag">Feature 10</span>
         <h3>Doctor &amp; DB tools</h3>
         <p><code>tpy doctor</code> checks project files. <code>tpy db info</code> / <code>tpy db ping</code> inspect and test the connection.</p>
       </article>
@@ -660,7 +666,66 @@
       <article class="tile">
         <span class="tag">Refresh</span>
         <h3>Re-run anytime</h3>
-        <p>After schema changes, run <code>tpy admin</code> again to regenerate the dashboard so the UI stays in sync with your models.</p>
+        <p>After schema changes, run <code>tpy admin</code> again to regenerate the dashboard so the UI stays in sync with your models. With <code>tpy auth</code> enabled, the UI includes login and role checks.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="auth">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Security</p>
+      <h2>JWT authentication</h2>
+      <p class="lead">
+        Run <code>tpy auth</code> for Django-style auth: default <code>AuthRole</code> + <code>User</code>,
+        JWT access + refresh tokens, and an admin login gate.
+      </p>
+    </div>
+
+    <div class="admin-run">
+      <pre><span class="prompt">$</span> tpy auth
+<span class="prompt">$</span> pip install -r requirements.txt
+<span class="prompt">$</span> tpy migrate &amp;&amp; tpy seed
+<span class="prompt">$</span> tpy serve
+<span class="prompt">$</span> tpy admin</pre>
+      <p class="lead" style="max-width:none;">
+        Default login:
+        <code style="color:var(--amber);">admin@example.com</code> /
+        <code style="color:var(--amber);">admin123</code>
+        (super-admin)
+      </p>
+    </div>
+
+    <div class="grid" style="margin-top:1.4rem;">
+      <article class="tile">
+        <span class="tag">Schema</span>
+        <h3>Default tables</h3>
+        <ul>
+          <li><code>AuthRole</code> — super-admin, admin, developer</li>
+          <li><code>User</code> — name, email, password (hashed), role_id</li>
+        </ul>
+      </article>
+      <article class="tile">
+        <span class="tag">API</span>
+        <h3>Auth endpoints</h3>
+        <ul>
+          <li><code>POST /auth/register</code></li>
+          <li><code>POST /auth/login</code> — access + refresh</li>
+          <li><code>POST /auth/refresh</code></li>
+          <li><code>POST /auth/logout</code></li>
+          <li><code>GET /auth/me</code></li>
+        </ul>
+      </article>
+      <article class="tile">
+        <span class="tag">Roles</span>
+        <h3>Dashboard access</h3>
+        <p><strong style="color:var(--ink);">super-admin</strong> and <strong style="color:var(--ink);">developer</strong> can open the React admin UI. The <code>admin</code> role is API-only.</p>
+      </article>
+      <article class="tile">
+        <span class="tag">Tokens</span>
+        <h3>Access + refresh</h3>
+        <p>Short-lived access JWT (default 15m) plus long-lived refresh JWT (default 7d). Logout revokes the refresh token server-side.</p>
       </article>
     </div>
   </div>
@@ -841,6 +906,7 @@ status: string default "draft"</pre>
           <li><code>tpy build --with-ui</code> — generate CRUD and <code>admin/</code></li>
           <li><code>tpy crud</code> — regenerate layers from schema only</li>
           <li><code>tpy admin</code> — generate the React admin dashboard</li>
+          <li><code>tpy auth</code> — JWT auth, AuthRole + User, role seeds</li>
           <li><code>tpy doctor</code> — validate project files</li>
           <li><code>tpy version</code> — show framework version</li>
         </ul>
@@ -981,6 +1047,7 @@ status: string default "draft"</pre>
           <li><code>tpy build --skip-db</code> — use existing .env</li>
           <li><code>tpy crud</code> — regenerate CRUD from schema</li>
           <li><code>tpy admin</code> — generate React admin UI</li>
+          <li><code>tpy auth</code> — enable JWT auth</li>
           <li><code>tpy doctor</code> — validate project health</li>
         </ul>
       </article>
@@ -1051,7 +1118,7 @@ status: string default "draft"</pre>
 
 <footer>
   <div class="wrap" style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.6rem;">
-    <span>tamilPY Framework · Client guide · REV 05</span>
+    <span>tamilPY Framework · Client guide · REV 06</span>
     <span>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></span>
   </div>
 </footer>

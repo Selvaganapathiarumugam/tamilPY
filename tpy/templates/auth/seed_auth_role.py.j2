@@ -1,0 +1,94 @@
+"""
+Auth role + bootstrap super-admin seed.
+
+Run: tpy seed
+Default login: admin@example.com / admin123
+"""
+
+from uuid import uuid4
+
+from passlib.context import CryptContext
+
+from tpy.database import Seeder
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+ROLES = ("super-admin", "admin", "developer")
+BOOTSTRAP_EMAIL = "admin@example.com"
+BOOTSTRAP_PASSWORD = "admin123"
+BOOTSTRAP_NAME = "Super Admin"
+
+
+class AuthRoleSeeder(Seeder):
+    """Insert default roles and one super-admin user."""
+
+    def _is_mongo(self) -> bool:
+        return hasattr(self.db, "collection_find_one")
+
+    def _find_role(self, name: str):
+        if self._is_mongo():
+            return self.db.collection_find_one("authrole", {"name": name})
+        table = self.db.quote_identifier("authrole")
+        col = self.db.quote_identifier("name")
+        return self.db.fetch_one(
+            f"SELECT * FROM {table} WHERE {col} = ?",
+            (name,),
+        )
+
+    def _insert_role(self, name: str) -> dict:
+        row = {"id": str(uuid4()), "name": name}
+        if self._is_mongo():
+            self.db.collection_insert_one("authrole", row)
+            return row
+        table = self.db.quote_identifier("authrole")
+        self.db.execute(
+            f"INSERT INTO {table} ("
+            f"{self.db.quote_identifier('id')}, "
+            f"{self.db.quote_identifier('name')}"
+            f") VALUES (?, ?)",
+            (row["id"], row["name"]),
+        )
+        return row
+
+    def _find_user(self, email: str):
+        if self._is_mongo():
+            return self.db.collection_find_one("user", {"email": email})
+        table = self.db.quote_identifier("user")
+        col = self.db.quote_identifier("email")
+        return self.db.fetch_one(
+            f"SELECT * FROM {table} WHERE {col} = ?",
+            (email,),
+        )
+
+    def _insert_user(self, data: dict) -> None:
+        if self._is_mongo():
+            self.db.collection_insert_one("user", data)
+            return
+        table = self.db.quote_identifier("user")
+        columns = ", ".join(self.db.quote_identifier(k) for k in data.keys())
+        placeholders = ", ".join(["?"] * len(data))
+        self.db.execute(
+            f"INSERT INTO {table} ({columns}) VALUES ({placeholders})",
+            tuple(data.values()),
+        )
+
+    def run(self) -> None:
+        role_ids: dict[str, str] = {}
+        for name in ROLES:
+            existing = self._find_role(name)
+            if existing is None:
+                existing = self._insert_role(name)
+            role_ids[name] = str(existing["id"])
+
+        if self._find_user(BOOTSTRAP_EMAIL) is not None:
+            return
+
+        self._insert_user(
+            {
+                "id": str(uuid4()),
+                "name": BOOTSTRAP_NAME,
+                "email": BOOTSTRAP_EMAIL,
+                "password": pwd_context.hash(BOOTSTRAP_PASSWORD),
+                "role_id": role_ids["super-admin"],
+            }
+        )

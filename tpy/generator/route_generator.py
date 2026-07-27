@@ -42,14 +42,20 @@ class RouteGenerator:
 
     def generate(self, ast: ProgramNode) -> None:
         """Generate route files for every model in the AST."""
+        auth_enabled = (self.project_root / ".tpy_auth").exists()
         for model in ast.models:
-            self.generate_route(model)
+            self.generate_route(model, auth_enabled=auth_enabled)
 
-        self.write_router_index(ast)
+        self.write_router_index(ast, auth_enabled=auth_enabled)
 
-    def generate_route(self, model: ModelNode) -> None:
+    def generate_route(
+        self,
+        model: ModelNode,
+        auth_enabled: bool = False,
+    ) -> None:
         """Build context, render template, and write one route file."""
         context = self.build_context(model)
+        context["auth_enabled"] = auth_enabled
         content = self.template.render(
             "generators/route.py.j2",
             context,
@@ -92,19 +98,33 @@ class RouteGenerator:
         )
         FileManager.write(output, content)
 
-    def write_router_index(self, ast: ProgramNode) -> None:
+    def write_router_index(
+        self,
+        ast: ProgramNode,
+        auth_enabled: bool = False,
+    ) -> None:
         """
         Write ``app/routes/__init__.py`` that aggregates model routers.
 
         Args:
             ast: Parsed program AST.
+            auth_enabled: When True (or auth route exists), include auth router.
         """
+        include_auth = auth_enabled or (
+            self.project_root / "app" / "routes" / "auth.py"
+        ).exists()
+
         lines = [
             '"""Auto-generated route registry."""',
             "",
             "from fastapi import APIRouter",
             "",
         ]
+
+        if include_auth:
+            lines.append(
+                "from app.routes.auth import router as auth_router"
+            )
 
         for model in ast.models:
             module = model.name.lower()
@@ -113,6 +133,9 @@ class RouteGenerator:
             )
 
         lines.extend(["", "api_router = APIRouter()", ""])
+
+        if include_auth:
+            lines.append("api_router.include_router(auth_router)")
 
         for model in ast.models:
             module = model.name.lower()

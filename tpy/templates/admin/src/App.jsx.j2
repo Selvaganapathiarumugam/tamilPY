@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
 import { models } from "./data/models.js";
+import LoginPage from "./pages/LoginPage.jsx";
 import ModelFormPage from "./pages/ModelFormPage.jsx";
 import ModelListPage from "./pages/ModelListPage.jsx";
 
@@ -9,7 +11,14 @@ export default function App() {
 
   return (
     <Routes>
-      <Route element={<Layout models={models} />}>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        element={
+          <RequireAuth>
+            <Layout models={models} />
+          </RequireAuth>
+        }
+      >
         <Route path="/" element={<Navigate to={firstModelPath} replace />} />
         {models.map((model) => (
           <Route

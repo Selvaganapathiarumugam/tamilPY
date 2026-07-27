@@ -1,0 +1,78 @@
+"""
+Auto Generated MongoDB Repository
+
+Model : {{ class_name }}
+"""
+{% if primary_type == "UUID" %}
+from uuid import uuid4
+{% endif %}
+
+
+class {{ class_name }}Repository:
+    """
+    Data-access layer for the ``{{ table_name }}`` MongoDB collection.
+    """
+
+    TABLE = "{{ table_name }}"
+    PRIMARY_KEY = "{{ primary_key }}"
+    COLUMNS = frozenset({{ columns }})
+    WRITABLE_COLUMNS = frozenset({{ writable_columns }})
+
+    def __init__(self, db) -> None:
+        """
+        Args:
+            db: Mongo provider exposing collection helpers.
+        """
+        self.db = db
+
+    def _filter_payload(self, data: dict, allowed: frozenset[str]) -> dict:
+        """Keep only schema-defined fields before writing documents."""
+        return {
+            key: value
+            for key, value in data.items()
+            if key in allowed
+        }
+
+    def all(self) -> list[dict]:
+        """Return every document in the collection."""
+        return self.db.collection_all(self.TABLE)
+
+    def find(self, record_id) -> dict | None:
+        """Return a single document by primary key."""
+        return self.db.collection_find_one(
+            self.TABLE,
+            {self.PRIMARY_KEY: record_id},
+        )
+
+    def create(self, data: dict) -> dict | None:
+        """Insert a document and return the created record."""
+        payload = self._filter_payload(data, self.COLUMNS)
+{% if primary_type == "UUID" %}
+        if not payload.get(self.PRIMARY_KEY):
+            payload[self.PRIMARY_KEY] = str(uuid4())
+{% endif %}
+        if not payload:
+            raise ValueError("No valid fields provided for create.")
+
+        self.db.collection_insert_one(self.TABLE, payload)
+        return self.find(payload.get(self.PRIMARY_KEY))
+
+    def update(self, record_id, data: dict) -> dict | None:
+        """Update a document by primary key and return the result."""
+        payload = self._filter_payload(data, self.WRITABLE_COLUMNS)
+        if not payload:
+            return self.find(record_id)
+
+        self.db.collection_update_one(
+            self.TABLE,
+            {self.PRIMARY_KEY: record_id},
+            payload,
+        )
+        return self.find(record_id)
+
+    def delete(self, record_id) -> bool:
+        """Delete a document by primary key."""
+        return self.db.collection_delete_one(
+            self.TABLE,
+            {self.PRIMARY_KEY: record_id},
+        )

@@ -1,11 +1,14 @@
+database sqlite
+
+model AuthRole {
+  id: uuid primary
+  name: string unique required
+}
+
 model User {
-
-    id: uuid primary
-
-    name: string required
-
-    email: string unique
-
-    age: int
-
+  id: uuid primary
+  name: string required
+  email: string unique required
+  password: string required
+  role_id: uuid references AuthRole
 }

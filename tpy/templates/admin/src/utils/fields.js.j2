@@ -9,6 +9,9 @@ export function emptyValue(field) {
 }
 
 export function inputType(field) {
+  if (field.name === "password") {
+    return "password";
+  }
   if (field.type === "int" || field.type === "float") {
     return "number";
   }

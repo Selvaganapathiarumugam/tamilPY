@@ -14,6 +14,8 @@ class {{ class_name }}Repository:
     """
 
     TABLE = "{{ table_name }}"
+    COLUMNS = frozenset({{ columns }})
+    WRITABLE_COLUMNS = frozenset({{ writable_columns }})
 
     def __init__(self, db) -> None:
         """
@@ -30,6 +32,14 @@ class {{ class_name }}Repository:
         """Return a dialect-quoted column name."""
         return self.db.quote_identifier(name)
 
+    def _filter_payload(self, data: dict, allowed: frozenset[str]) -> dict:
+        """Keep only schema-defined columns before building SQL."""
+        return {
+            key: value
+            for key, value in data.items()
+            if key in allowed
+        }
+
     def all(self) -> list[dict]:
         """Return every row in the table."""
         return self.db.fetch_all(
@@ -45,11 +55,14 @@ class {{ class_name }}Repository:
 
     def create(self, data: dict) -> dict | None:
         """Insert a row and return the created record."""
-        payload = dict(data)
+        payload = self._filter_payload(data, self.COLUMNS)
 {% if primary_type == "UUID" %}
         if not payload.get("{{ primary_key }}"):
             payload["{{ primary_key }}"] = str(uuid4())
 {% endif %}
+        if not payload:
+            raise ValueError("No valid fields provided for create.")
+
         columns = ", ".join(self._column(key) for key in payload.keys())
         placeholders = ", ".join(["?"] * len(payload))
         self.db.execute(
@@ -60,15 +73,16 @@ class {{ class_name }}Repository:
 
     def update(self, record_id, data: dict) -> dict | None:
         """Update a row by primary key and return the result."""
-        if not data:
+        payload = self._filter_payload(data, self.WRITABLE_COLUMNS)
+        if not payload:
             return self.find(record_id)
 
         assignments = ", ".join(
-            f"{self._column(key)} = ?" for key in data.keys()
+            f"{self._column(key)} = ?" for key in payload.keys()
         )
         self.db.execute(
             f"UPDATE {self._table()} SET {assignments} WHERE {self._column('{{ primary_key }}')} = ?",
-            (*data.values(), str(record_id)),
+            (*payload.values(), str(record_id)),
         )
         return self.find(record_id)
 

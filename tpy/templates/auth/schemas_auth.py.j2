@@ -1,0 +1,51 @@
+"""
+Auth request / response schemas.
+"""
+
+from pydantic import BaseModel, Field
+
+
+class RegisterRequest(BaseModel):
+    """Public registration payload."""
+
+    name: str = Field(min_length=1)
+    email: str = Field(min_length=3)
+    password: str = Field(min_length=6)
+
+
+class LoginRequest(BaseModel):
+    """Login payload."""
+
+    email: str
+    password: str
+
+
+class RefreshRequest(BaseModel):
+    """Refresh-token payload."""
+
+    refresh_token: str
+
+
+class LogoutRequest(BaseModel):
+    """Logout payload."""
+
+    refresh_token: str
+
+
+class TokenResponse(BaseModel):
+    """Access + refresh token pair."""
+
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+
+class MeResponse(BaseModel):
+    """Current user profile (no password)."""
+
+    id: str
+    name: str
+    email: str
+    role_id: str | None = None
+    role: str | None = None

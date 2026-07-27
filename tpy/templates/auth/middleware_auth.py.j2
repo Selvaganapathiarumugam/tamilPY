@@ -1,0 +1,78 @@
+"""
+FastAPI auth dependencies.
+"""
+
+from __future__ import annotations
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+import jwt
+
+from app.providers.database import db
+from app.security.jwt import decode_token
+
+bearer_scheme = HTTPBearer(auto_error=False)
+
+DASHBOARD_ROLES = frozenset({"super-admin", "developer"})
+
+
+def _find_user(user_id: str) -> dict | None:
+    """Load a user by id using SQL or Mongo helpers."""
+    if hasattr(db, "collection_find_one"):
+        return db.collection_find_one("user", {"id": str(user_id)})
+    quoted = db.quote_identifier("user")
+    id_col = db.quote_identifier("id")
+    return db.fetch_one(
+        f"SELECT * FROM {quoted} WHERE {id_col} = ?",
+        (str(user_id),),
+    )
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> dict:
+    """
+    Require a valid access JWT and return the user record (no password).
+    """
+    if credentials is None or not credentials.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    try:
+        payload = decode_token(credentials.credentials)
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Access token required",
+        )
+
+    user = _find_user(payload.get("sub", ""))
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    safe = {key: value for key, value in user.items() if key != "password"}
+    safe["role"] = payload.get("role")
+    return safe
+
+
+def require_dashboard_role(user: dict = Depends(get_current_user)) -> dict:
+    """Allow only super-admin and developer (admin UI)."""
+    if user.get("role") not in DASHBOARD_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Dashboard access denied for this role",
+        )
+    return user

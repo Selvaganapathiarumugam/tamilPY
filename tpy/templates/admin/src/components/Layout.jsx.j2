@@ -1,6 +1,16 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { logout } from "../api/client.js";
+import { getRole } from "../auth/session.js";
 
 export default function Layout({ models }) {
+  const navigate = useNavigate();
+  const role = getRole();
+
+  async function onLogout() {
+    await logout();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <div className="shell">
       <aside className="sidebar">
@@ -25,6 +35,12 @@ export default function Layout({ models }) {
             </NavLink>
           ))}
         </nav>
+        <div className="sidebar-footer">
+          <p className="muted">{role || "signed in"}</p>
+          <button type="button" className="secondary" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
       </aside>
       <main className="content">
         <Outlet />

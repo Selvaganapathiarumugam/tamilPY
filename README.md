@@ -1,10 +1,34 @@
 # TamilPY
 
+[![PyPI version](https://img.shields.io/pypi/v/tamilPY.svg)](https://pypi.org/project/tamilPY/)
+[![Python versions](https://img.shields.io/pypi/pyversions/tamilPY.svg)](https://pypi.org/project/tamilPY/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Schema-driven Python web framework** — define models in `schema.tpy`, generate a production-ready FastAPI stack, and ship.
 
 Built by [Selvaganapathi Arumugam](https://github.com/selvaganapathiarumugam).
 
 [Documentation](https://selvaganapathiarumugam.github.io/tamilPY/) · [PyPI](https://pypi.org/project/tamilPY/) · Requires Python 3.12+
+
+---
+
+## Why "tamilPY"?
+
+The name is a nod to my mother tongue, Tamil — a small personal tribute from the author. The framework itself isn't Tamil-specific in any way; it's a general-purpose, schema-driven Python web framework built for any project, any language, any team.
+
+---
+
+## Table of contents
+
+- [Features](#features)
+- [How it compares](#how-it-compares)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [CLI reference](#cli-reference)
+- [Schema language](#schema-language)
+- [Admin dashboard](#admin-dashboard)
+- [Documentation](#documentation)
+- [License](#license)
 
 ---
 
@@ -15,6 +39,26 @@ Built by [Selvaganapathi Arumugam](https://github.com/selvaganapathiarumugam).
 - **Full CRUD generation** — FastAPI layers from a single build step
 - **Admin dashboard** — optional Vite + React UI generated from the same schema
 - **CLI workflow** — project scaffolding, migrations, seeds, and local server in one tool
+
+---
+
+## How it compares
+
+| Criteria | Django | Flask | FastAPI (plain) | tamilPY |
+|---|---|---|---|---|
+| Development speed | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Learning curve | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Boilerplate code | High | Very high (build it yourself) | Moderate (routes/schemas written by hand) | Very low (schema-generated) |
+| Code generation | ❌ | ❌ | ❌ | ✅ Full stack (models → routes → admin) |
+| Database support | PostgreSQL, MySQL, SQLite, Oracle | Any (via extensions, e.g. SQLAlchemy) | Any (via extensions, e.g. SQLAlchemy, Tortoise) | SQLite, PostgreSQL, MySQL, MongoDB |
+| REST API | Requires DRF | Manual | ✅ Native | ✅ FastAPI native |
+| Async | Limited | ❌ | ✅ Native | ✅ Native |
+| Type safety | Optional | Optional | ✅ Pydantic | ✅ Pydantic-enforced |
+| Admin dashboard | ✅ Built-in | ❌ | ❌ | ✅ Generated (Vite + React) |
+| CRUD development | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Time to MVP | Days / weeks | Weeks | Days | Hours to a few days |
+
+*Ratings reflect typical experience for standard CRUD/API-driven projects; results vary by team familiarity and project scope.*
 
 ---
 
@@ -57,6 +101,23 @@ cd admin && npm install && npm run dev
 
 Admin UI: `http://127.0.0.1:5173`
 
+### JWT auth (optional)
+
+```bash
+tpy auth
+pip install -r requirements.txt
+tpy migrate
+tpy seed
+tpy serve
+tpy admin   # refresh UI with login page
+```
+
+Default super-admin: `admin@example.com` / `admin123`  
+
+Roles: `super-admin`, `admin`, `developer` — dashboard allows **super-admin** and **developer** only.
+
+API: `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `GET /auth/me`
+
 ---
 
 ## CLI reference
@@ -69,6 +130,7 @@ Admin UI: `http://127.0.0.1:5173`
 | `tpy build --with-ui` | Generate app layers and the React admin dashboard |
 | `tpy crud` | Regenerate CRUD layers from `schema.tpy` |
 | `tpy admin` | Generate a Vite + React admin dashboard |
+| `tpy auth` | Enable JWT auth (login/register/refresh/logout), AuthRole + User, role seeds |
 | `tpy db configure` | Re-run the database configuration wizard |
 | `tpy migrate` | Create the database (if needed) and apply migrations |
 | `tpy migrate rollback` | Roll back the latest migration |
@@ -130,6 +192,10 @@ Compiles to `REFERENCES "user" ("id")`. Define referenced models **before** depe
 - Fields with `default` are optional in the generated create schema
 - `index` adds a secondary index; primary keys are indexed automatically
 
+### Database support
+
+SQLite, PostgreSQL, MySQL, and MongoDB are supported for generated CRUD and migrations. SQL providers apply migrations as tables, columns, indexes, and foreign keys. MongoDB applies the same schema as collections and indexes; references are indexed metadata rather than enforced foreign-key constraints.
+
 ---
 
 ## Admin dashboard
@@ -154,7 +220,7 @@ The wizard prompts for the API base URL (default: `http://127.0.0.1:8000`).
 
 Re-running `tpy admin` refreshes generated files to match the current schema.
 
-> **Note:** The admin `package.json` uses `@rollup/wasm-node` so Vite works on Windows hosts where Application Control blocks Rollup’s native binary.
+> **Note:** The admin `package.json` uses `@rollup/wasm-node` so Vite works on Windows hosts where Application Control blocks Rollup's native binary.
 
 ---
 

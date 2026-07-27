@@ -4,12 +4,15 @@ Auto Generated Routes
 Model : {{ class_name }}
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter{% if auth_enabled %}, Depends{% endif %}
 {% if primary_type == "UUID" %}
 from uuid import UUID
 {% endif %}
 
 from app.controllers.{{ module_name }} import {{ class_name }}Controller
+{% if auth_enabled %}
+from app.middleware.auth import get_current_user
+{% endif %}
 from app.schemas.{{ module_name }} import (
     {{ class_name }}Create,
     {{ class_name }}Response,
@@ -25,25 +28,25 @@ controller = {{ class_name }}Controller()
 
 
 @router.get("/", response_model=list[{{ class_name }}Response])
-def index():
+def index({% if auth_enabled %}user: dict = Depends(get_current_user){% endif %}):
     return controller.index()
 
 
 @router.get("/{record_id}", response_model={{ class_name }}Response)
-def show(record_id: {{ primary_type }}):
+def show(record_id: {{ primary_type }}{% if auth_enabled %}, user: dict = Depends(get_current_user){% endif %}):
     return controller.show(record_id)
 
 
 @router.post("/", response_model={{ class_name }}Response, status_code=201)
-def store(payload: {{ class_name }}Create):
+def store(payload: {{ class_name }}Create{% if auth_enabled %}, user: dict = Depends(get_current_user){% endif %}):
     return controller.store(payload)
 
 
 @router.put("/{record_id}", response_model={{ class_name }}Response)
-def update(record_id: {{ primary_type }}, payload: {{ class_name }}Update):
+def update(record_id: {{ primary_type }}, payload: {{ class_name }}Update{% if auth_enabled %}, user: dict = Depends(get_current_user){% endif %}):
     return controller.update(record_id, payload)
 
 
 @router.delete("/{record_id}")
-def destroy(record_id: {{ primary_type }}):
+def destroy(record_id: {{ primary_type }}{% if auth_enabled %}, user: dict = Depends(get_current_user){% endif %}):
     return controller.destroy(record_id)

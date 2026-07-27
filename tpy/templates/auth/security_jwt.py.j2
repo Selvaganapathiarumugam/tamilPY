@@ -1,0 +1,81 @@
+"""
+JWT helpers and password hashing for TPY auth.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+from typing import Any
+from uuid import uuid4
+import os
+
+import jwt
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+ALGORITHM = "HS256"
+
+
+def _secret() -> str:
+    return os.getenv("JWT_SECRET", "change-me-in-production")
+
+
+def _access_minutes() -> int:
+    return int(os.getenv("JWT_ACCESS_EXPIRE_MINUTES", "15"))
+
+
+def _refresh_days() -> int:
+    return int(os.getenv("JWT_REFRESH_EXPIRE_DAYS", "7"))
+
+
+def hash_password(password: str) -> str:
+    """Hash a plain-text password."""
+    return pwd_context.hash(password)
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    """Verify a plain-text password against a hash."""
+    return pwd_context.verify(plain, hashed)
+
+
+def create_access_token(user_id: str, role: str) -> str:
+    """Create a short-lived access JWT."""
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": str(user_id),
+        "role": role,
+        "type": "access",
+        "iat": now,
+        "exp": now + timedelta(minutes=_access_minutes()),
+    }
+    return jwt.encode(payload, _secret(), algorithm=ALGORITHM)
+
+
+def create_refresh_token(user_id: str) -> tuple[str, str]:
+    """
+    Create a long-lived refresh JWT.
+
+    Returns:
+        Tuple of (token, jti).
+    """
+    now = datetime.now(timezone.utc)
+    jti = str(uuid4())
+    payload = {
+        "sub": str(user_id),
+        "type": "refresh",
+        "jti": jti,
+        "iat": now,
+        "exp": now + timedelta(days=_refresh_days()),
+    }
+    token = jwt.encode(payload, _secret(), algorithm=ALGORITHM)
+    return token, jti
+
+
+def decode_token(token: str) -> dict[str, Any]:
+    """Decode and validate a JWT; raises jwt exceptions on failure."""
+    return jwt.decode(token, _secret(), algorithms=[ALGORITHM])
+
+
+def access_expires_seconds() -> int:
+    """Return access-token lifetime in seconds."""
+    return _access_minutes() * 60

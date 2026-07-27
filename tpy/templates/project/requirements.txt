@@ -6,3 +6,6 @@ typer
 rich
 sqlalchemy
 tamilPY
+PyJWT
+passlib[bcrypt]
+bcrypt<4.1

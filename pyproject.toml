@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tamilPY"
-version = "0.1.6"
+version = "0.1.7"
 description = "TamilPY Framework — schema-driven Python web framework"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -20,12 +20,17 @@ dependencies = [
     "uvicorn",
     "sqlalchemy",
     "pydantic",
-    "motor",
     "pymongo",
     "psycopg2-binary",
     "pymysql",
+    "PyJWT",
+    "passlib[bcrypt]",
+    "bcrypt<4.1",
 ]
-
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 [project.scripts]
 tpy = "tpy.cli:app"
 

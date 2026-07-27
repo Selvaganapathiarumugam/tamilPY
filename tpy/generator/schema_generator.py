@@ -98,7 +98,9 @@ class SchemaGenerator:
                     }
                 )
 
-            response_fields.append(field_info)
+            # Never expose password hashes in API responses.
+            if field.name.lower() != "password":
+                response_fields.append(field_info)
 
         return {
             "class_name": model.name,

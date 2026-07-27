@@ -1,0 +1,20 @@
+import { Navigate, Outlet } from "react-router-dom";
+import { canAccessDashboard, isLoggedIn } from "../auth/session.js";
+
+export default function RequireAuth({ children }) {
+  if (!isLoggedIn()) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!canAccessDashboard()) {
+    return (
+      <section className="access-denied">
+        <h1>Access denied</h1>
+        <p className="muted">
+          The <code>admin</code> role is API-only. Dashboard access requires
+          super-admin or developer.
+        </p>
+      </section>
+    );
+  }
+  return children || <Outlet />;
+}

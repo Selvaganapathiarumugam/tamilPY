@@ -1,3 +1,8 @@
 # Database settings are written by: tpy build
 TPY_HOST=127.0.0.1
 TPY_PORT=8000
+
+# JWT auth (written by: tpy auth)
+JWT_SECRET=change-me-in-production
+JWT_ACCESS_EXPIRE_MINUTES=15
+JWT_REFRESH_EXPIRE_DAYS=7

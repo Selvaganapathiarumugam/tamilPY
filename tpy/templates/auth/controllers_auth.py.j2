@@ -1,0 +1,43 @@
+"""
+Auth HTTP controller.
+"""
+
+from app.schemas.auth import (
+    LoginRequest,
+    LogoutRequest,
+    MeResponse,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+)
+from app.services.auth import AuthService
+
+
+class AuthController:
+    """Thin HTTP adapter over AuthService."""
+
+    def __init__(self, service: AuthService | None = None) -> None:
+        self.service = service or AuthService()
+
+    def register(self, payload: RegisterRequest) -> TokenResponse:
+        data = self.service.register(
+            payload.name,
+            payload.email,
+            payload.password,
+        )
+        return TokenResponse(**data)
+
+    def login(self, payload: LoginRequest) -> TokenResponse:
+        data = self.service.login(payload.email, payload.password)
+        return TokenResponse(**data)
+
+    def refresh(self, payload: RefreshRequest) -> TokenResponse:
+        data = self.service.refresh(payload.refresh_token)
+        return TokenResponse(**data)
+
+    def logout(self, payload: LogoutRequest) -> dict:
+        return self.service.logout(payload.refresh_token)
+
+    def me(self, user: dict) -> MeResponse:
+        profile = self.service.me(str(user["id"]))
+        return MeResponse(**profile)

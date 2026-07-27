@@ -1,0 +1,44 @@
+"""
+Auth API routes.
+"""
+
+from fastapi import APIRouter, Depends
+
+from app.controllers.auth import AuthController
+from app.middleware.auth import get_current_user
+from app.schemas.auth import (
+    LoginRequest,
+    LogoutRequest,
+    MeResponse,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+)
+
+router = APIRouter(prefix="/auth", tags=["Auth"])
+controller = AuthController()
+
+
+@router.post("/register", response_model=TokenResponse)
+def register(payload: RegisterRequest):
+    return controller.register(payload)
+
+
+@router.post("/login", response_model=TokenResponse)
+def login(payload: LoginRequest):
+    return controller.login(payload)
+
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh(payload: RefreshRequest):
+    return controller.refresh(payload)
+
+
+@router.post("/logout")
+def logout(payload: LogoutRequest):
+    return controller.logout(payload)
+
+
+@router.get("/me", response_model=MeResponse)
+def me(user: dict = Depends(get_current_user)):
+    return controller.me(user)
