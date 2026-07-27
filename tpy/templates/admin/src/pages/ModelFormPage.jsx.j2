@@ -1,0 +1,173 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  createRecord,
+  getRecord,
+  listRecords,
+  updateRecord,
+} from "../api/client.js";
+import PageHeader from "../components/PageHeader.jsx";
+import RecordForm from "../components/RecordForm.jsx";
+import StatusMessage from "../components/StatusMessage.jsx";
+import {
+  buildPayload,
+  initialFormState,
+  validateFields,
+  visibleFields,
+} from "../utils/fields.js";
+
+export default function ModelFormPage({ model }) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEdit = Boolean(id);
+  const [form, setForm] = useState(() => initialFormState(model.fields));
+  const [references, setReferences] = useState({});
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(isEdit);
+
+  const fields = useMemo(
+    () => visibleFields(model.fields, isEdit),
+    [model.fields, isEdit],
+  );
+
+  useEffect(() => {
+    setForm(initialFormState(model.fields));
+    setErrors({});
+    setStatus("");
+  }, [model.routePrefix]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadReferences() {
+      const referenceFields = model.fields.filter((field) => field.reference);
+      if (referenceFields.length === 0) {
+        setReferences({});
+        return;
+      }
+
+      try {
+        const entries = await Promise.all(
+          referenceFields.map(async (field) => [
+            field.name,
+            await listRecords(field.reference.routePrefix),
+          ]),
+        );
+        if (!cancelled) {
+          setReferences(Object.fromEntries(entries));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setStatus(error.message);
+        }
+      }
+    }
+
+    loadReferences();
+    return () => {
+      cancelled = true;
+    };
+  }, [model.routePrefix, model.fields]);
+
+  useEffect(() => {
+    if (!isEdit) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadRecord() {
+      setLoading(true);
+      setStatus("");
+      try {
+        const record = await getRecord(model.routePrefix, id);
+        if (!cancelled) {
+          setForm({
+            ...initialFormState(model.fields),
+            ...record,
+          });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setStatus(error.message);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadRecord();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isEdit, model.routePrefix, model.fields]);
+
+  function setFieldValue(field, value) {
+    setForm((current) => ({
+      ...current,
+      [field.name]: value,
+    }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setStatus("");
+
+    const nextErrors = validateFields(fields, form);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+
+    try {
+      const payload = buildPayload(fields, form);
+      if (isEdit) {
+        await updateRecord(model.routePrefix, id, payload);
+      } else {
+        await createRecord(model.routePrefix, payload);
+      }
+      navigate(`/${model.routePrefix}`);
+    } catch (error) {
+      setStatus(error.message);
+    }
+  }
+
+  if (loading) {
+    return <StatusMessage>Loading {model.name}...</StatusMessage>;
+  }
+
+  return (
+    <section>
+      <PageHeader
+        title={`${isEdit ? "Edit" : "New"} ${model.name}`}
+        subtitle={isEdit ? id : "Create a new record"}
+        actions={
+          <Link className="button secondary" to={`/${model.routePrefix}`}>
+            Back
+          </Link>
+        }
+      />
+
+      <StatusMessage tone="error">{status}</StatusMessage>
+
+      <RecordForm
+        fields={fields}
+        form={form}
+        references={references}
+        errors={errors}
+        onChange={setFieldValue}
+        onSubmit={handleSubmit}
+        submitLabel={isEdit ? "Save changes" : `Create ${model.name}`}
+        cancelSlot={
+          <Link className="button secondary" to={`/${model.routePrefix}`}>
+            Cancel
+          </Link>
+        }
+      />
+    </section>
+  );
+}

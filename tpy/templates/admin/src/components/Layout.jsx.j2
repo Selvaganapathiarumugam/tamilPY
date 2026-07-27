@@ -1,0 +1,34 @@
+import { NavLink, Outlet } from "react-router-dom";
+
+export default function Layout({ models }) {
+  return (
+    <div className="shell">
+      <aside className="sidebar">
+        <div className="brand">
+          <span className="brand-mark">TPY</span>
+          <div>
+            <strong>Admin</strong>
+            <p className="brand-sub">tamilPY dashboard</p>
+          </div>
+        </div>
+        <nav aria-label="Models">
+          {models.length === 0 && (
+            <p className="muted">No models in schema.tpy</p>
+          )}
+          {models.map((model) => (
+            <NavLink
+              key={model.routePrefix}
+              to={`/${model.routePrefix}`}
+              className={({ isActive }) => (isActive ? "active" : undefined)}
+            >
+              {model.name}
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
+      <main className="content">
+        <Outlet />
+      </main>
+    </div>
+  );
+}

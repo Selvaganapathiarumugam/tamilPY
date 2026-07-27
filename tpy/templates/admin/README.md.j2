@@ -1,0 +1,48 @@
+# TPY Admin
+
+Generated Vite + React admin dashboard for your tamilPY FastAPI backend.
+
+## Structure
+
+```text
+admin/
+  package.json
+  vite.config.js
+  index.html
+  src/
+    App.jsx                 # routes
+    data/models.js          # generated from schema.tpy
+    components/             # shared UI
+    pages/                  # generic list + form pages
+    api/client.js
+```
+
+## Run
+
+```bash
+# terminal 1 — API
+tpy serve
+
+# terminal 2 — admin UI
+cd admin
+npm install
+npm run dev
+```
+
+Open http://127.0.0.1:5173
+
+`package.json` overrides Vite's Rollup dependency to `@rollup/wasm-node`.
+That avoids Windows Application Control blocking Rollup's native `.node` binary.
+
+The admin app calls the FastAPI backend at:
+
+```text
+{{ api_base_url }}
+```
+
+Update `src/config.js` if your backend runs somewhere else.
+
+## Regeneration
+
+Running `tpy admin` or `tpy build --with-ui` again regenerates files in `admin/`
+from `schema.tpy` (including `src/data/models.js`).

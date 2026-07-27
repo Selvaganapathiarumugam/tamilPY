@@ -1,0 +1,7 @@
+export default function StatusMessage({ children, tone = "info" }) {
+  if (!children) {
+    return null;
+  }
+
+  return <div className={`status ${tone === "error" ? "error" : ""}`}>{children}</div>;
+}

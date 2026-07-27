@@ -1,37 +1,85 @@
-Schema-driven Python web framework by **Selvaganapathi Arumugam**.
+# TamilPY
 
-## Install
+**Schema-driven Python web framework** — define models in `schema.tpy`, generate a production-ready FastAPI stack, and ship.
+
+Built by [Selvaganapathi Arumugam](https://github.com/selvaganapathiarumugam).
+
+[Documentation](https://selvaganapathiarumugam.github.io/tamilPY/) · [PyPI](https://pypi.org/project/tamilPY/) · Requires Python 3.12+
+
+---
+
+## Features
+
+- **Schema-first development** — one `schema.tpy` drives models, migrations, repositories, services, controllers, and routes
+- **Multi-database** — SQLite, PostgreSQL, MySQL, and MongoDB
+- **Full CRUD generation** — FastAPI layers from a single build step
+- **Admin dashboard** — optional Vite + React UI generated from the same schema
+- **CLI workflow** — project scaffolding, migrations, seeds, and local server in one tool
+
+---
+
+## Installation
 
 ```bash
 pip install tamilPY
 ```
 
-## Client flow
+Verify the install:
 
-1. `tpy new myapp` — create the app  
-2. Edit `schema.tpy` — define models  
-3. `tpy build` — choose DB (SQLite / PostgreSQL / MySQL / MongoDB), enter connection details, generate code  
-4. `tpy migrate` — apply migrations  
-5. `tpy seed` — seed sample data  
-6. `tpy serve` — run the API  
+```bash
+tpy version
+```
 
-## Commands
+---
+
+## Quick start
+
+```bash
+tpy new myapp
+cd myapp
+```
+
+Edit `schema.tpy`, then:
+
+```bash
+tpy build          # configure database + generate application layers
+tpy migrate        # apply migrations
+tpy seed           # optional sample data
+tpy serve          # start the API at http://127.0.0.1:8000
+```
+
+Generate the admin UI (optional):
+
+```bash
+tpy admin          # or: tpy build --with-ui
+cd admin && npm install && npm run dev
+```
+
+Admin UI: `http://127.0.0.1:5173`
+
+---
+
+## CLI reference
 
 | Command | Description |
 |---------|-------------|
 | `tpy new <name>` | Create a new project |
-| `tpy build` | Interactive DB setup + generate app layers |
-| `tpy build --skip-db` | Generate using existing `.env` |
+| `tpy build` | Interactive database setup and code generation |
+| `tpy build --skip-db` | Generate using an existing `.env` |
+| `tpy build --with-ui` | Generate app layers and the React admin dashboard |
 | `tpy crud` | Regenerate CRUD layers from `schema.tpy` |
-| `tpy db configure` | Re-run DB wizard anytime |
-| `tpy migrate` | Create DB if needed + apply migrations |
-| `tpy migrate rollback` | Roll back latest migration |
-| `tpy seed` | Run `database/seeds` |
-| `tpy serve` | Start FastAPI server |
+| `tpy admin` | Generate a Vite + React admin dashboard |
+| `tpy db configure` | Re-run the database configuration wizard |
+| `tpy migrate` | Create the database (if needed) and apply migrations |
+| `tpy migrate rollback` | Roll back the latest migration |
+| `tpy seed` | Run seed scripts in `database/seeds` |
+| `tpy serve` | Start the FastAPI development server |
 | `tpy doctor` | Validate project structure |
-| `tpy version` | Show framework version |
+| `tpy version` | Print the installed framework version |
 
-## schema.tpy reference
+---
+
+## Schema language
 
 ```tpy
 database postgres
@@ -61,59 +109,61 @@ model Post {
 | Constraint | Effect |
 |------------|--------|
 | `primary` | Primary key |
-| `required` | Required in the create API |
-| `unique` | `UNIQUE` column |
-| `nullable` | Allows `NULL` / optional |
-| `index` | Generates `CREATE INDEX idx_<table>_<column>` |
-| `default <value>` | Column default (number, `"string"`, `true`/`false`) |
+| `required` | Required on create |
+| `unique` | Unique column constraint |
+| `nullable` | Allows `NULL` / optional values |
+| `index` | Secondary index (`idx_<table>_<column>`) |
+| `default <value>` | Column default (`0`, `"draft"`, `true` / `false`) |
 | `references <Model>` | Foreign key (alias: `foreign <Model>`) |
 
 ### Foreign keys
-
-Use `references <Model>` on a field. It targets the referenced model's `id` by
-default, or a specific column with `references <Model>.<column>`:
 
 ```tpy
 user_id: uuid references User
 author:  uuid references User.id
 ```
 
-Compiles to `REFERENCES "user" ("id")`. Define the referenced model **earlier**
-in `schema.tpy` so its migration runs first.
+Compiles to `REFERENCES "user" ("id")`. Define referenced models **before** dependents so migrations run in order.
 
-### Defaults & indexes
+### Defaults and indexes
 
-- Fields with a `default` become optional in the generated create schema.
-- `index` adds a secondary index; primary keys are already indexed.
+- Fields with `default` are optional in the generated create schema
+- `index` adds a secondary index; primary keys are indexed automatically
 
-## Docs
+---
 
-Open [TamilPY](https://selvaganapathiarumugam.github.io/tamilPY/) for the full client guide.
+## Admin dashboard
 
-## Release (PyPI)
-
-Publishing is automated from the **Production** branch via GitHub Actions.
-
-1. In GitHub → **Settings → Secrets and variables → Actions**, add:
-   - Name: `PYPI_API_TOKEN`
-   - Value: your PyPI API token (`pypi-...`)
-2. Merge your work into `Production`.
-3. Create and push a version tag from that commit:
+`tpy admin` generates a Vite + React app under `admin/` from `schema.tpy`.
 
 ```bash
-git checkout Production
-git pull
-git tag v0.1.7
-git push origin v0.1.7
+tpy serve          # terminal 1 — API
+tpy admin          # generate UI (once, or after schema changes)
+cd admin
+npm install
+npm run dev        # terminal 2 — UI
 ```
 
-The workflow will:
-- verify the tag is on `Production`
-- update `pyproject.toml` version from the tag
-- build `dist/` (sdist + wheel)
-- upload to PyPI
+The wizard prompts for the API base URL (default: `http://127.0.0.1:8000`).
 
-## Author
+| Path | Role |
+|------|------|
+| `src/data/models.js` | Model registry generated from `schema.tpy` |
+| `src/components/` | Shared Layout, DataTable, RecordForm |
+| `src/pages/` | Generic list and form pages |
 
-**Selvaganapathi Arumugam**  
-Software Developer
+Re-running `tpy admin` refreshes generated files to match the current schema.
+
+> **Note:** The admin `package.json` uses `@rollup/wasm-node` so Vite works on Windows hosts where Application Control blocks Rollup’s native binary.
+
+---
+
+## Documentation
+
+Full client guide: [TamilPY Docs](https://selvaganapathiarumugam.github.io/tamilPY/)
+
+---
+
+## License
+
+MIT © Selvaganapathi Arumugam

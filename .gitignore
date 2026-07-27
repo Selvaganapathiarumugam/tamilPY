@@ -14,3 +14,4 @@ storage/
 .idea/
 .vscode/
 .cursor/
+test/

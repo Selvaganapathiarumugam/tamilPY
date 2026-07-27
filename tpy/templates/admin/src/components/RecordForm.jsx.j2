@@ -1,0 +1,92 @@
+import { inputType, toDateTimeLocal } from "../utils/fields.js";
+
+export default function RecordForm({
+  fields,
+  form,
+  references,
+  errors,
+  onChange,
+  onSubmit,
+  submitLabel,
+  cancelSlot,
+}) {
+  function renderField(field) {
+    if (field.type === "bool") {
+      return (
+        <label className="field checkbox" key={field.name}>
+          <input
+            checked={Boolean(form[field.name])}
+            onChange={(event) => onChange(field, event.target.checked)}
+            type="checkbox"
+          />
+          <span>{field.name}</span>
+        </label>
+      );
+    }
+
+    if (field.reference) {
+      return (
+        <div className="field" key={field.name}>
+          <label htmlFor={field.name}>{field.name}</label>
+          <select
+            id={field.name}
+            name={field.name}
+            onChange={(event) => onChange(field, event.target.value)}
+            required={field.required && !field.hasDefault}
+            value={form[field.name] ?? ""}
+          >
+            <option value="">Select {field.reference.model}</option>
+            {(references[field.name] || []).map((item) => {
+              const value =
+                item[field.reference.valueField] ?? item.id ?? "";
+              const label =
+                item[field.reference.labelField] ??
+                item[field.reference.valueField] ??
+                item.id;
+              return (
+                <option key={String(value)} value={value}>
+                  {label}
+                </option>
+              );
+            })}
+          </select>
+          {errors[field.name] ? (
+            <span className="field-error">{errors[field.name]}</span>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+      <div className="field" key={field.name}>
+        <label htmlFor={field.name}>{field.name}</label>
+        <input
+          id={field.name}
+          name={field.name}
+          onChange={(event) => onChange(field, event.target.value)}
+          required={field.required && !field.hasDefault}
+          step={field.type === "float" ? "any" : undefined}
+          type={inputType(field)}
+          value={
+            field.type === "datetime"
+              ? toDateTimeLocal(form[field.name])
+              : form[field.name] ?? ""
+          }
+        />
+        {errors[field.name] ? (
+          <span className="field-error">{errors[field.name]}</span>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <form className="form" onSubmit={onSubmit}>
+      {fields.map(renderField)}
+      <div className="form-actions">
+        <button type="submit">{submitLabel}</button>
+        {cancelSlot}
+      </div>
+    </form>
+  );
+}

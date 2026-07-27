@@ -1,0 +1,59 @@
+import { Link } from "react-router-dom";
+import { formatValue } from "../utils/fields.js";
+
+export default function DataTable({
+  fields,
+  records,
+  primaryName,
+  resource,
+  onDelete,
+}) {
+  return (
+    <div className="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            {fields.map((field) => (
+              <th key={field.name}>{field.name}</th>
+            ))}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((record) => {
+            const id = record[primaryName];
+            return (
+              <tr key={id}>
+                {fields.map((field) => (
+                  <td key={field.name}>{formatValue(record[field.name])}</td>
+                ))}
+                <td>
+                  <div className="actions">
+                    <Link
+                      className="button secondary"
+                      to={`/${resource}/${id}/edit`}
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      className="danger"
+                      type="button"
+                      onClick={() => onDelete(record)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+          {records.length === 0 && (
+            <tr>
+              <td colSpan={fields.length + 1}>No records found.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}

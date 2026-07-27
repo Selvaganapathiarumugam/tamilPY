@@ -3,8 +3,10 @@ from pathlib import Path
 import typer
 
 from tpy.runtime.builder import Builder
+from tpy.generator.admin_generator import AdminGenerator
 from tpy.utils.console import Console
 from tpy.utils.db_wizard import DatabaseWizard
+from tpy.commands.admin import prompt_api_base_url
 
 
 def register(app: typer.Typer) -> None:
@@ -16,6 +18,16 @@ def register(app: typer.Typer) -> None:
             False,
             "--skip-db",
             help="Skip interactive database setup and use existing .env",
+        ),
+        with_ui: bool = typer.Option(
+            False,
+            "--with-ui",
+            help="Also generate the React admin dashboard under admin/",
+        ),
+        api_base_url: str | None = typer.Option(
+            None,
+            "--api-base-url",
+            help="FastAPI backend base URL for --with-ui.",
         ),
     ) -> None:
         """
@@ -40,11 +52,24 @@ def register(app: typer.Typer) -> None:
 
             builder = Builder(project_root=root)
             ast = builder.build()
+            if with_ui:
+                base_url = prompt_api_base_url(api_base_url)
+                if (root / "admin").exists():
+                    Console.warning(
+                        "admin/ already exists; generated admin files will be overwritten."
+                    )
+                AdminGenerator(root).generate(ast, base_url)
+
             model_count = len(ast.models)
             Console.success(
                 f"Build completed successfully ({model_count} model(s))."
             )
-            Console.info("Next: tpy migrate && tpy seed && tpy serve")
+            if with_ui:
+                Console.info(
+                    "Next: tpy migrate && tpy seed && tpy serve, then cd admin && npm install && npm run dev"
+                )
+            else:
+                Console.info("Next: tpy migrate && tpy seed && tpy serve")
         except FileNotFoundError as error:
             Console.error(str(error))
             raise typer.Exit(1)

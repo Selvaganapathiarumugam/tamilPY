@@ -1,0 +1,47 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import Layout from "./components/Layout.jsx";
+import { models } from "./data/models.js";
+import ModelFormPage from "./pages/ModelFormPage.jsx";
+import ModelListPage from "./pages/ModelListPage.jsx";
+
+export default function App() {
+  const firstModelPath = models[0] ? `/${models[0].routePrefix}` : "/";
+
+  return (
+    <Routes>
+      <Route element={<Layout models={models} />}>
+        <Route path="/" element={<Navigate to={firstModelPath} replace />} />
+        {models.map((model) => (
+          <Route
+            key={`${model.routePrefix}-list`}
+            path={`/${model.routePrefix}`}
+            element={<ModelListPage model={model} />}
+          />
+        ))}
+        {models.map((model) => (
+          <Route
+            key={`${model.routePrefix}-new`}
+            path={`/${model.routePrefix}/new`}
+            element={<ModelFormPage model={model} />}
+          />
+        ))}
+        {models.map((model) => (
+          <Route
+            key={`${model.routePrefix}-edit`}
+            path={`/${model.routePrefix}/:id/edit`}
+            element={<ModelFormPage model={model} />}
+          />
+        ))}
+        <Route
+          path="*"
+          element={
+            <section>
+              <h1>Not found</h1>
+              <p className="muted">No admin page matches this URL.</p>
+            </section>
+          }
+        />
+      </Route>
+    </Routes>
+  );
+}

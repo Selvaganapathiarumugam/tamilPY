@@ -1,0 +1,95 @@
+export function emptyValue(field) {
+  if (field.hasDefault) {
+    return field.defaultValue ?? "";
+  }
+  if (field.type === "bool") {
+    return false;
+  }
+  return "";
+}
+
+export function inputType(field) {
+  if (field.type === "int" || field.type === "float") {
+    return "number";
+  }
+  if (field.type === "datetime") {
+    return "datetime-local";
+  }
+  return "text";
+}
+
+export function toDateTimeLocal(value) {
+  if (!value) {
+    return "";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value).slice(0, 16);
+  }
+  return date.toISOString().slice(0, 16);
+}
+
+export function formatValue(value) {
+  if (value === true) {
+    return "Yes";
+  }
+  if (value === false) {
+    return "No";
+  }
+  if (value === null || value === undefined || value === "") {
+    return "—";
+  }
+  return String(value);
+}
+
+export function initialFormState(fields) {
+  return fields.reduce((state, field) => {
+    state[field.name] = emptyValue(field);
+    return state;
+  }, {});
+}
+
+export function visibleFields(fields, isEdit) {
+  return fields.filter(
+    (field) => !(field.primary && field.type === "uuid" && !isEdit),
+  );
+}
+
+export function buildPayload(fields, form) {
+  return fields.reduce((payload, field) => {
+    const value = form[field.name];
+
+    if ((value === "" || value === null || value === undefined) && !field.required) {
+      return payload;
+    }
+
+    if (field.type === "int") {
+      payload[field.name] = Number.parseInt(value, 10);
+    } else if (field.type === "float") {
+      payload[field.name] = Number.parseFloat(value);
+    } else if (field.type === "bool") {
+      payload[field.name] = Boolean(value);
+    } else {
+      payload[field.name] = value;
+    }
+
+    return payload;
+  }, {});
+}
+
+export function validateFields(fields, form) {
+  const errors = {};
+  fields.forEach((field) => {
+    if (
+      field.required &&
+      !field.hasDefault &&
+      field.type !== "bool" &&
+      (form[field.name] === "" ||
+        form[field.name] === null ||
+        form[field.name] === undefined)
+    ) {
+      errors[field.name] = `${field.name} is required`;
+    }
+  });
+  return errors;
+}

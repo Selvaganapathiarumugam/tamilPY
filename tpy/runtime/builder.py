@@ -35,6 +35,18 @@ class Builder:
         Raises:
             FileNotFoundError: When ``schema.tpy`` is missing.
         """
+        ast = self.parse_schema()
+
+        self.run_generators(ast)
+        return ast
+
+    def parse_schema(self):
+        """
+        Parse ``schema.tpy`` and return the AST without running generators.
+
+        Raises:
+            FileNotFoundError: When ``schema.tpy`` is missing.
+        """
         if not self.schema_path.exists():
             raise FileNotFoundError(
                 f"{self.schema_path} not found."
@@ -43,10 +55,7 @@ class Builder:
         lexer = Lexer.from_file(self.schema_path)
         tokens = lexer.tokenize()
         parser = Parser(tokens)
-        ast = parser.parse()
-
-        self.run_generators(ast)
-        return ast
+        return parser.parse()
 
     def run_generators(self, ast) -> None:
         """Execute every registered generator."""
