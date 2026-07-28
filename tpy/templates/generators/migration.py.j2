@@ -19,6 +19,9 @@ class {{ model_name }}Migration(Migration):
             datatype="{{ column.datatype }}",
         ){{ column.chain }}
 {% endfor %}
+{% for cols in unique_together %}
+        self.unique({% for c in cols %}"{{ c }}"{% if not loop.last %}, {% endif %}{% endfor %})
+{% endfor %}
 
     def down(self):
 

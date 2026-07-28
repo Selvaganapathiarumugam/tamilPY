@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from tpy.exceptions import TpyParseError
 from tpy.parser.tokens import Token, TokenType, KEYWORDS
 
 
@@ -66,7 +67,7 @@ class Lexer:
                 tokens.append(symbol)
                 continue
 
-            raise SyntaxError(
+            raise TpyParseError(
                 f"Unexpected character '{ch}' "
                 f"at line {self.line}, column {self.column}"
             )
@@ -157,7 +158,7 @@ class Lexer:
             self.advance()
 
         if self.position >= len(self.source):
-            raise SyntaxError("Unterminated string literal")
+            raise TpyParseError("Unterminated string literal")
 
         self.advance()
 

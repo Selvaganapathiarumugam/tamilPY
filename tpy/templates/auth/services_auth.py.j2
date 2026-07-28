@@ -23,6 +23,45 @@ from app.security.jwt import (
 REFRESH_COLLECTION = "_tpy_refresh_tokens"
 DEFAULT_REGISTER_ROLE = "admin"
 
+# In-memory login rate limit (per process). Prefer Redis / API gateway in production.
+LOGIN_WINDOW_SECONDS = 60
+LOGIN_MAX_ATTEMPTS = 5
+_login_attempts: dict[str, list[float]] = {}
+
+
+def _prune_attempts(key: str, now: float) -> list[float]:
+    window_start = now - LOGIN_WINDOW_SECONDS
+    attempts = [ts for ts in _login_attempts.get(key, []) if ts >= window_start]
+    _login_attempts[key] = attempts
+    return attempts
+
+
+def _check_login_rate_limit(email: str) -> None:
+    """Raise 429 when too many login attempts occur for an email."""
+    now = datetime.now(timezone.utc).timestamp()
+    key = email.strip().lower()
+    attempts = _prune_attempts(key, now)
+    if len(attempts) >= LOGIN_MAX_ATTEMPTS:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=(
+                "Too many login attempts. Try again later. "
+                "For production, put Redis or gateway rate limits in front of /auth/login."
+            ),
+        )
+
+
+def _record_login_attempt(email: str) -> None:
+    now = datetime.now(timezone.utc).timestamp()
+    key = email.strip().lower()
+    attempts = _prune_attempts(key, now)
+    attempts.append(now)
+    _login_attempts[key] = attempts
+
+
+def _clear_login_attempts(email: str) -> None:
+    _login_attempts.pop(email.strip().lower(), None)
+
 
 class AuthService:
     """Register, login, refresh, logout, and profile helpers."""
@@ -202,12 +241,15 @@ class AuthService:
 
     def login(self, email: str, password: str) -> dict:
         """Validate credentials and return a token pair."""
+        _check_login_rate_limit(email)
         user = self._find_user_by_email(email)
         if user is None or not verify_password(password, str(user.get("password", ""))):
+            _record_login_attempt(email)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid email or password",
             )
+        _clear_login_attempts(email)
         return self._token_pair(user)
 
     def refresh(self, refresh_token: str) -> dict:

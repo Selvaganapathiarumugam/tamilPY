@@ -28,18 +28,36 @@ class Column:
         self.options["index"] = True
         return self
 
-    def references(self, table: str, column: str = "id") -> "Column":
+    def references(
+        self,
+        table: str,
+        column: str = "id",
+        on_delete: str | None = None,
+        on_update: str | None = None,
+    ) -> "Column":
         """
         Add a foreign-key reference to ``table(column)``.
 
         Args:
             table: Referenced table name.
             column: Referenced column name (defaults to ``id``).
+            on_delete: Optional ON DELETE action.
+            on_update: Optional ON UPDATE action.
         """
-        self.options["references"] = {
+        payload: dict = {
             "table": table,
             "column": column,
         }
+        if on_delete:
+            payload["on_delete"] = on_delete
+        if on_update:
+            payload["on_update"] = on_update
+        self.options["references"] = payload
+        return self
+
+    def check(self, expression: str) -> "Column":
+        """Attach a CHECK constraint expression."""
+        self.options["check"] = expression
         return self
 
     def default(self, value) -> "Column":

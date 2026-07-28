@@ -22,9 +22,13 @@ class MigrationGenerator:
         """
         self.project_root = Path(project_root)
         self.template = TemplateEngine()
+        self._enum_lookup: dict[str, list[str]] = {}
 
     def generate(self, ast: ProgramNode) -> None:
         """Generate ordered migration files for every model in the AST."""
+        self._enum_lookup = {
+            node.name: list(node.values) for node in ast.enums
+        }
         for index, model in enumerate(ast.models, start=1):
             self.generate_migration(model, index)
 
@@ -53,7 +57,7 @@ class MigrationGenerator:
             columns.append(
                 {
                     "name": field.name,
-                    "datatype": field.datatype,
+                    "datatype": self._sql_datatype(field),
                     "chain": self.build_chain(field),
                 }
             )
@@ -62,20 +66,25 @@ class MigrationGenerator:
             "table_name": model.name.lower(),
             "model_name": model.name,
             "columns": columns,
+            "unique_together": model.unique_together,
         }
+
+    def _sql_datatype(self, field: FieldNode) -> str:
+        if field.datatype.startswith("enum"):
+            return "enum"
+        return field.datatype
+
+    def _resolve_enum_values(self, field: FieldNode) -> list[str]:
+        if field.enum_values:
+            return list(field.enum_values)
+        if field.datatype.startswith("enum:"):
+            name = field.datatype.split(":", 1)[1]
+            return list(self._enum_lookup.get(name, []))
+        return []
 
     def build_chain(self, field: FieldNode) -> str:
         """
         Build the fluent ``Column`` method chain for a field.
-
-        Includes primary/unique/nullable/index constraints, a foreign-key
-        reference, and a literal default value where present.
-
-        Args:
-            field: Field AST node.
-
-        Returns:
-            A string like ``.primary().references("user", "id")``.
         """
         chain = ""
 
@@ -84,17 +93,32 @@ class MigrationGenerator:
         for constraint in self.FLUENT_CONSTRAINTS:
             if constraint not in field.constraints:
                 continue
-            # A primary key is already indexed; skip a redundant index.
             if constraint == "index" and is_primary:
                 continue
             chain += f".{constraint}()"
 
         if field.reference is not None:
-            chain += (
-                f".references("
-                f"{field.reference.table!r}, "
-                f"{field.reference.column!r})"
+            kwargs = [
+                f"{field.reference.table!r}",
+                f"{field.reference.column!r}",
+            ]
+            if field.reference.on_delete:
+                kwargs.append(f"on_delete={field.reference.on_delete!r}")
+            if field.reference.on_update:
+                kwargs.append(f"on_update={field.reference.on_update!r}")
+            chain += f".references({', '.join(kwargs)})"
+
+        enum_values = self._resolve_enum_values(field)
+        if enum_values:
+            quoted = ", ".join(repr(value) for value in enum_values)
+            expr = (
+                f"{field.name} IN ({quoted})"
             )
+            # CHECK uses SQL identifiers without Python quotes in values list.
+            sql_values = ", ".join(
+                "'" + value.replace("'", "''") + "'" for value in enum_values
+            )
+            chain += f".check(\"{field.name} IN ({sql_values})\")"
 
         if field.has_default and field.default is not None:
             chain += f".default({field.default!r})"
@@ -109,11 +133,6 @@ class MigrationGenerator:
     ) -> None:
         """
         Write ``NNN_<model>_migration.py``, replacing older names for the model.
-
-        Args:
-            model_name: Model class name.
-            content: Rendered migration source.
-            sequence: 1-based order from ``schema.tpy``.
         """
         stem = model_name.lower()
         migrations_dir = (
@@ -121,7 +140,6 @@ class MigrationGenerator:
         )
         FileManager.create_directory(migrations_dir)
 
-        # Remove legacy and previous numbered files for this model.
         legacy = migrations_dir / f"{stem}_migration.py"
         if FileManager.exists(legacy):
             legacy.unlink()

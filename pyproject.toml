@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tamilPY"
-version = "0.1.7"
+version = "0.1.8"
 description = "TamilPY Framework — schema-driven Python web framework"
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "MIT" }
+license = { file = "LICENSE" }
 authors = [
     { name = "Selvaganapathi Arumugam" }
 ]
@@ -18,11 +18,7 @@ dependencies = [
     "rich",
     "fastapi",
     "uvicorn",
-    "sqlalchemy",
     "pydantic",
-    "pymongo",
-    "psycopg2-binary",
-    "pymysql",
     "PyJWT",
     "passlib[bcrypt]",
     "bcrypt<4.1",
@@ -31,11 +27,57 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
+
+[project.optional-dependencies]
+sqlite = []
+postgres = ["sqlalchemy", "psycopg2-binary"]
+mysql = ["sqlalchemy", "pymysql"]
+mongodb = ["pymongo"]
+all = [
+    "sqlalchemy",
+    "psycopg2-binary",
+    "pymysql",
+    "pymongo",
+]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+    "httpx",
+]
+
+[project.urls]
+Homepage = "https://selvaganapathiarumugam.github.io/tamilPY/"
+Repository = "https://github.com/Selvaganapathiarumugam/tamilPY"
+Issues = "https://github.com/Selvaganapathiarumugam/tamilPY/issues"
+Changelog = "https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/CHANGELOG.md"
+
 [project.scripts]
-tpy = "tpy.cli:app"
+tpy = "tpy.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["tpy*"]
 
 [tool.setuptools.package-data]
-tpy = ["templates/**/*"]
+tpy = ["templates/**/*", "py.typed"]
+
+[tool.setuptools]
+license-files = ["LICENSE"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+packages = ["tpy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

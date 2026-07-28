@@ -3,7 +3,6 @@ import os
 import sys
 
 import typer
-import uvicorn
 
 from tpy.config.loader import ConfigLoader
 from tpy.utils.console import Console
@@ -23,6 +22,8 @@ def register(app: typer.Typer) -> None:
 
         Expects ``app/main.py`` exposing ``app`` (uvicorn target: ``app.main:app``).
         """
+        import uvicorn
+
         root = Path(".").resolve()
         main_file = root / "app" / "main.py"
 

@@ -29,6 +29,7 @@ The name is a nod to my mother tongue, Tamil — a small personal tribute from t
 - [Admin dashboard](#admin-dashboard)
 - [Documentation](#documentation)
 - [License](#license)
+- [Contributing](#contributing)
 
 ---
 
@@ -68,10 +69,21 @@ The name is a nod to my mother tongue, Tamil — a small personal tribute from t
 pip install tamilPY
 ```
 
+Database drivers are optional extras:
+
+```bash
+pip install "tamilPY[postgres]"
+pip install "tamilPY[mysql]"
+pip install "tamilPY[mongodb]"
+pip install "tamilPY[all]"
+```
+
+SQLite works with the base install (stdlib).
+
 Verify the install:
 
 ```bash
-tpy version
+python -m tpy.cli version
 ```
 
 ---
@@ -164,7 +176,7 @@ model Post {
 
 ### Types
 
-`int` · `string` · `float` · `bool` · `uuid` · `datetime`
+`int` · `string` · `float` · `bool` · `uuid` · `datetime` · `enum(...)` / `enum Name`
 
 ### Field constraints
 
@@ -177,6 +189,21 @@ model Post {
 | `index` | Secondary index (`idx_<table>_<column>`) |
 | `default <value>` | Column default (`0`, `"draft"`, `true` / `false`) |
 | `references <Model>` | Foreign key (alias: `foreign <Model>`) |
+| `on_delete` / `on_update` | FK actions: `cascade`, `set_null`, `restrict`, `no_action` |
+
+Model-level composite unique:
+
+```tpy
+unique(student_id, course_id)
+```
+
+Named / inline enums:
+
+```tpy
+enum Status { draft published }
+status: enum Status
+kind: enum(a, b)
+```
 
 ### Foreign keys
 
@@ -227,6 +254,25 @@ Re-running `tpy admin` refreshes generated files to match the current schema.
 ## Documentation
 
 Full client guide: [TamilPY Docs](https://selvaganapathiarumugam.github.io/tamilPY/)
+
+- [Schema grammar (v0.1)](docs/schema-grammar.md)
+- [Versioning & deprecation](docs/versioning.md)
+- [Changelog](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/CHANGELOG.md)
+- [Security policy](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/SECURITY.md)
+
+### Async / sync trade-off
+
+Generated repositories and database providers are **synchronous**. FastAPI route
+handlers call sync provider methods directly. That keeps the stack simple and
+portable across SQLite / Postgres / MySQL / Mongo. For heavy IO under load,
+run workers behind a process manager or plan for future async providers; do not
+assume the generated DB layer is async-native today.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/CODE_OF_CONDUCT.md).
 
 ---
 

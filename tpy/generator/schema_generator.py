@@ -19,6 +19,7 @@ class SchemaGenerator:
         "bool": "bool",
         "uuid": "UUID",
         "datetime": "datetime",
+        "enum": "str",
     }
 
     IMPORT_MAPPING: dict[str, dict[str, str]] = {
@@ -161,6 +162,8 @@ class SchemaGenerator:
         Returns:
             Python type name. Defaults to ``str`` when unknown.
         """
+        if datatype.startswith("enum"):
+            return "str"
         return self.TYPE_MAPPING.get(datatype, "str")
 
     def is_primary(self, field: FieldNode) -> bool:

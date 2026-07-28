@@ -86,3 +86,12 @@ class Migration(ABC):
     def datetime(self, name: str) -> Column:
         """Add a datetime column."""
         return self.add_column(Column(name, "datetime"))
+
+    def unique(self, *columns: str) -> None:
+        """Queue a composite UNIQUE constraint on the current table."""
+        self.operations.append(
+            {
+                "action": "unique",
+                "columns": list(columns),
+            }
+        )

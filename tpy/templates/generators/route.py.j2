@@ -5,6 +5,7 @@ Model : {{ class_name }}
 """
 
 from fastapi import APIRouter{% if auth_enabled %}, Depends{% endif %}
+
 {% if primary_type == "UUID" %}
 from uuid import UUID
 {% endif %}
@@ -13,6 +14,7 @@ from app.controllers.{{ module_name }} import {{ class_name }}Controller
 {% if auth_enabled %}
 from app.middleware.auth import get_current_user
 {% endif %}
+
 from app.schemas.{{ module_name }} import (
     {{ class_name }}Create,
     {{ class_name }}Response,

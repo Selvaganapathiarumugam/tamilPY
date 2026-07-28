@@ -22,6 +22,7 @@ class BaseProvider(ABC):
         "boolean": "BOOLEAN",
         "uuid": "TEXT",
         "datetime": "TIMESTAMP",
+        "enum": "TEXT",
     }
 
     def __init__(
@@ -32,6 +33,15 @@ class BaseProvider(ABC):
         self.database_url = database_url
         self.project_root = Path(project_root)
         self.connection: Any = None
+
+    def __enter__(self) -> "BaseProvider":
+        """Connect and return ``self`` for ``with`` usage."""
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        """Close the connection when leaving a ``with`` block."""
+        self.close()
 
     @abstractmethod
     def connect(self) -> Any:
@@ -222,12 +232,14 @@ class BaseProvider(ABC):
         current_table: str | None = None
         columns: list[str] = []
         index_columns: list[str] = []
+        table_constraints: list[str] = []
 
         def flush_create() -> None:
-            nonlocal current_table, columns, index_columns
+            nonlocal current_table, columns, index_columns, table_constraints
             if current_table is None:
                 return
-            body = ", ".join(columns) if columns else ""
+            parts = list(columns) + list(table_constraints)
+            body = ", ".join(parts) if parts else ""
             table = self.quote_identifier(current_table)
             statements.append(
                 f"CREATE TABLE IF NOT EXISTS {table} ({body})"
@@ -239,6 +251,7 @@ class BaseProvider(ABC):
             current_table = None
             columns = []
             index_columns = []
+            table_constraints = []
 
         for operation in operations:
             action = operation["action"]
@@ -248,6 +261,7 @@ class BaseProvider(ABC):
                 current_table = operation["table"]
                 columns = []
                 index_columns = []
+                table_constraints = []
                 continue
 
             if action == "column":
@@ -261,6 +275,12 @@ class BaseProvider(ABC):
                         "primary"
                     ):
                         index_columns.append(column.name)
+                continue
+
+            if action == "unique":
+                cols = operation.get("columns") or []
+                quoted = ", ".join(self.quote_identifier(c) for c in cols)
+                table_constraints.append(f"UNIQUE ({quoted})")
                 continue
 
             if action == "drop_table":
@@ -289,7 +309,10 @@ class BaseProvider(ABC):
 
     def compile_column(self, column) -> str:
         """Compile a ``Column`` object into a SQL fragment."""
-        sql_type = self.TYPE_MAP.get(column.datatype, "TEXT")
+        datatype = column.datatype
+        if str(datatype).startswith("enum"):
+            datatype = "enum"
+        sql_type = self.TYPE_MAP.get(datatype, "TEXT")
         parts = [self.quote_identifier(column.name), sql_type]
         options = column.options
 
@@ -308,9 +331,29 @@ class BaseProvider(ABC):
         if reference:
             ref_table = self.quote_identifier(reference["table"])
             ref_column = self.quote_identifier(reference["column"])
-            parts.append(f"REFERENCES {ref_table} ({ref_column})")
+            fk = f"REFERENCES {ref_table} ({ref_column})"
+            on_delete = reference.get("on_delete")
+            on_update = reference.get("on_update")
+            if on_delete:
+                fk += f" ON DELETE {self._fk_action_sql(on_delete)}"
+            if on_update:
+                fk += f" ON UPDATE {self._fk_action_sql(on_update)}"
+            parts.append(fk)
+
+        check = options.get("check")
+        if check:
+            parts.append(f"CHECK ({check})")
 
         return " ".join(parts)
+
+    def _fk_action_sql(self, action: str) -> str:
+        mapping = {
+            "cascade": "CASCADE",
+            "set_null": "SET NULL",
+            "restrict": "RESTRICT",
+            "no_action": "NO ACTION",
+        }
+        return mapping.get(action, "NO ACTION")
 
     def format_default(self, value: Any) -> str:
         """Format a default value for SQL."""

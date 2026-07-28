@@ -21,6 +21,7 @@ class TokenType(Enum):
     # =========================
     DATABASE = auto()
     MODEL = auto()
+    ENUM = auto()
 
     # Database Providers
     POSTGRES = auto()
@@ -49,21 +50,27 @@ class TokenType(Enum):
     INDEX = auto()
     REFERENCES = auto()
     FOREIGN = auto()
+    ON_DELETE = auto()
+    ON_UPDATE = auto()
+    CASCADE = auto()
+    SET_NULL = auto()
+    RESTRICT = auto()
+    NO_ACTION = auto()
 
     # =========================
     # Symbols
     # =========================
-    LBRACE = auto()      # {
-    RBRACE = auto()      # }
-    LPAREN = auto()      # (
-    RPAREN = auto()      # )
-    LBRACKET = auto()    # [
-    RBRACKET = auto()    # ]
-    COLON = auto()       # :
-    COMMA = auto()       # ,
-    DOT = auto()         # .
-    EQUAL = auto()       # =
-    QUESTION = auto()    # ?
+    LBRACE = auto()
+    RBRACE = auto()
+    LPAREN = auto()
+    RPAREN = auto()
+    LBRACKET = auto()
+    RBRACKET = auto()
+    COLON = auto()
+    COMMA = auto()
+    DOT = auto()
+    EQUAL = auto()
+    QUESTION = auto()
 
 
 @dataclass(slots=True)
@@ -81,33 +88,31 @@ class Token:
 
 
 KEYWORDS = {
-    # Schema
     "database": TokenType.DATABASE,
     "model": TokenType.MODEL,
-
-    # Providers
+    "enum": TokenType.ENUM,
     "postgres": TokenType.POSTGRES,
     "mysql": TokenType.MYSQL,
     "sqlite": TokenType.SQLITE,
     "mongodb": TokenType.MONGODB,
-
-    # Types
     "int": TokenType.INT,
     "string": TokenType.STRING_TYPE,
     "float": TokenType.FLOAT,
     "bool": TokenType.BOOL,
     "uuid": TokenType.UUID,
     "datetime": TokenType.DATETIME,
-
-    # Constraints
     "primary": TokenType.PRIMARY,
     "required": TokenType.REQUIRED,
     "unique": TokenType.UNIQUE,
     "nullable": TokenType.NULLABLE,
     "default": TokenType.DEFAULT,
     "index": TokenType.INDEX,
-
-    # Relations
     "references": TokenType.REFERENCES,
     "foreign": TokenType.FOREIGN,
+    "on_delete": TokenType.ON_DELETE,
+    "on_update": TokenType.ON_UPDATE,
+    "cascade": TokenType.CASCADE,
+    "set_null": TokenType.SET_NULL,
+    "restrict": TokenType.RESTRICT,
+    "no_action": TokenType.NO_ACTION,
 }

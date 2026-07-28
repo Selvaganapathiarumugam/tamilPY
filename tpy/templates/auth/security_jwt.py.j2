@@ -14,10 +14,30 @@ from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
+_WEAK_SECRETS = frozenset(
+    {
+        "",
+        "change-me",
+        "change-me-in-production",
+        "secret",
+        "jwt-secret",
+    }
+)
 
 
 def _secret() -> str:
-    return os.getenv("JWT_SECRET", "change-me-in-production")
+    """
+    Return JWT signing secret.
+
+    Fails closed when missing or using a known-weak placeholder.
+    """
+    value = (os.getenv("JWT_SECRET") or "").strip()
+    if not value or value.lower() in _WEAK_SECRETS or len(value) < 16:
+        raise RuntimeError(
+            "JWT_SECRET is missing or too weak. "
+            "Set a strong secret in .env (run `tpy auth` to generate one)."
+        )
+    return value
 
 
 def _access_minutes() -> int:

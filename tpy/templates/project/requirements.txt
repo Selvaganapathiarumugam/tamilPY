@@ -4,8 +4,12 @@ pydantic
 jinja2
 typer
 rich
-sqlalchemy
 tamilPY
+# Install DB extras as needed, e.g.:
+#   pip install "tamilPY[postgres]"
+#   pip install "tamilPY[mysql]"
+#   pip install "tamilPY[mongodb]"
+#   pip install "tamilPY[all]"
 PyJWT
 passlib[bcrypt]
 bcrypt<4.1

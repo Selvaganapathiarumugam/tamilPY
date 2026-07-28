@@ -2,7 +2,7 @@
 TPY_HOST=127.0.0.1
 TPY_PORT=8000
 
-# JWT auth (written by: tpy auth)
-JWT_SECRET=change-me-in-production
+# JWT auth — set by `tpy auth` (do not commit real secrets)
+# JWT_SECRET=<generated-by-tpy-auth>
 JWT_ACCESS_EXPIRE_MINUTES=15
 JWT_REFRESH_EXPIRE_DAYS=7
