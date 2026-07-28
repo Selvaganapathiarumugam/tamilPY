@@ -255,8 +255,8 @@ Re-running `tpy admin` refreshes generated files to match the current schema.
 
 Full client guide: [TamilPY Docs](https://selvaganapathiarumugam.github.io/tamilPY/)
 
-- [Schema grammar (v0.1)](docs/schema-grammar.md)
-- [Versioning & deprecation](docs/versioning.md)
+- [Schema grammar (v0.1)](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/docs/schema-grammar.md)
+- [Versioning & deprecation](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/docs/versioning.md)
 - [Changelog](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/CHANGELOG.md)
 - [Security policy](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/SECURITY.md)
 
