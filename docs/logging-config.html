@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Logging &amp; Config — tamilPY Docs</title>
+<meta name="description" content="Configure nested settings and write structured logs — including production config caching." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Logging &amp; Config</span>
+    </div>
+    <p class="eyebrow">Platform 14–15 · Study guide</p>
+    <h1>Logging &amp; Config</h1>
+    <p class="lead">Configure nested settings and write structured logs — including production config caching.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>How Config.load / load_auto work</li><li>How to cache config for faster boots</li><li>How to write to log channels</li></ul></div>
+
+<h2>1. Configuration setup</h2>
+<pre>from tpy.config import Config
+
+# Always parse tpy.toml + env
+cfg = Config.load(".")
+
+# Prefer JSON cache when TPY_CONFIG_CACHE=1 and cache is fresh
+cfg = Config.load_auto(".")
+
+print(cfg.get("app.name"))
+print(cfg.get("database.driver"))
+print(cfg.get("server.port", 8000))
+cfg.set("cache.driver", "redis")  # runtime only</pre>
+
+<pre><span class="prompt">$</span> tpy config show
+<span class="prompt">$</span> tpy config show app.name
+<span class="prompt">$</span> tpy config cache
+<span class="prompt">$</span> tpy config status
+<span class="prompt">$</span> tpy config clear
+<span class="prompt">$</span> set TPY_CONFIG_CACHE=1   <span style="color:var(--muted)"># Windows</span></pre>
+
+<h2>2. How config caching works</h2>
+<ol>
+  <li><code>tpy config cache</code> writes <code>storage/framework/config.cache.json</code>.</li>
+  <li>Cache is <strong style="color:var(--ink);">fresh</strong> only if newer than <code>tpy.toml</code> and <code>.env</code>.</li>
+  <li>With <code>TPY_CONFIG_CACHE=1</code>, <code>load_auto()</code> reads the cache when fresh; otherwise it reloads live sources.</li>
+</ol>
+
+<h2>3. Logging setup</h2>
+<pre>from tpy.logging import get_logger, LogManager
+
+log = get_logger("app")
+log.info("booted", version="0.1.9")
+
+manager = LogManager()
+manager.configure(level="INFO", log_dir="storage/logs", app_name="myapp")
+manager.channel("stack").error("something failed")</pre>
+      <div class="pager">
+        <a href="middleware-health.html"><span class="label">Previous</span>Middleware · Health · Lifecycle</a>
+        <a href="storage-routes.html"><span class="label">Next</span>Storage & route cache</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

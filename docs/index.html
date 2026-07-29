@@ -4,363 +4,30 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>tamilPY — Schema-Driven Python Framework</title>
-<meta name="description" content="tamilPY — draft a schema, generate a layered FastAPI app. Client guide: install, build, choose your database, ship." />
+<meta name="description" content="tamilPY documentation — schema-driven FastAPI generation, Query Builder, events, queues, cache, validation, kernel, storage, and CLI." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<style>
-  :root{
-    --cyan-1:#0f2a4a;
-    --cyan-2:#123a63;
-    --cyan-3:#194f82;
-    --ink:#f4eedd;
-    --muted:#a9c0d8;
-    --amber:#e8ab3e;
-    --rust:#d9663b;
-    --line: rgba(244,238,221,0.22);
-    --line-soft: rgba(244,238,221,0.12);
-    --radius: 2px;
-  }
-
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
-  }
-
-  body{
-    margin:0;
-    background:
-      linear-gradient(180deg, var(--cyan-1), var(--cyan-1) 40%, #0c2340 100%);
-    color:var(--ink);
-    font-family:"IBM Plex Sans", sans-serif;
-    line-height:1.65;
-    min-height:100vh;
-    position:relative;
-  }
-
-  /* faint blueprint grid */
-  body::before{
-    content:"";
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:0;
-    background-image:
-      linear-gradient(var(--line-soft) 1px, transparent 1px),
-      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
-    background-size: 42px 42px;
-    opacity:0.5;
-  }
-
-  a{color:inherit;}
-
-  .wrap{width:min(1160px, calc(100% - 2.4rem)); margin:0 auto; position:relative; z-index:1;}
-
-  .mono{font-family:"IBM Plex Mono", monospace;}
-
-  .eyebrow{
-    font-family:"IBM Plex Mono", monospace;
-    font-size:0.74rem;
-    letter-spacing:0.16em;
-    text-transform:uppercase;
-    color:var(--amber);
-    display:flex;
-    align-items:center;
-    gap:0.55rem;
-    margin:0 0 0.9rem;
-  }
-  .eyebrow::before{
-    content:"";
-    width:1.1rem;
-    height:1px;
-    background:var(--amber);
-    display:inline-block;
-  }
-
-  /* corner registration marks */
-  .crop{
-    position:absolute;
-    width:16px;
-    height:16px;
-    z-index:2;
-    opacity:0.55;
-    pointer-events:none;
-  }
-  .crop::before,.crop::after{content:"";position:absolute;background:var(--muted);}
-  .crop::before{width:100%; height:1px; top:50%;}
-  .crop::after{height:100%; width:1px; left:50%;}
-  .crop.tl{top:14px; left:14px;}
-  .crop.tr{top:14px; right:14px;}
-  .crop.bl{bottom:14px; left:14px;}
-  .crop.br{bottom:14px; right:14px;}
-
-  /* NAV */
-  .nav{
-    position:sticky; top:0; z-index:30;
-    backdrop-filter: blur(14px);
-    background: rgba(15,42,74,0.78);
-    border-bottom:1px solid var(--line);
-  }
-  .nav .wrap{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.9rem 0;}
-  .logo{
-    display:flex; align-items:baseline; gap:0.35rem;
-    font-family:"Space Grotesk", sans-serif;
-    font-weight:700; font-size:1.15rem; letter-spacing:-0.01em;
-    text-decoration:none; color:var(--ink);
-  }
-  .logo .glyph{color:var(--amber); font-size:1.05em;}
-  .navlinks{display:flex; flex-wrap:wrap; gap:1.3rem; font-size:0.86rem; font-family:"IBM Plex Mono",monospace;}
-  .navlinks a{text-decoration:none; color:var(--muted); transition:color .2s ease;}
-  .navlinks a:hover{color:var(--amber);}
-
-  /* HERO */
-  .hero{
-    position:relative;
-    padding:4.6rem 0 3.6rem;
-    border-bottom:1px solid var(--line);
-    overflow:hidden;
-  }
-  .hero-grid{
-    display:grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap:2.5rem;
-    align-items:center;
-  }
-  .hero-copy h1{
-    font-family:"Space Grotesk", sans-serif;
-    font-weight:700;
-    font-size:clamp(2.5rem, 4.6vw, 3.6rem);
-    line-height:1.04;
-    letter-spacing:-0.02em;
-    margin:0 0 1rem;
-  }
-  .hero-copy h1 .accent{color:var(--amber);}
-  .hero-copy p.lead{
-    color:var(--muted);
-    font-size:1.08rem;
-    max-width:34rem;
-    margin:0 0 1.6rem;
-  }
-  .cta-row{display:flex; flex-wrap:wrap; gap:0.75rem;}
-  .btn{
-    display:inline-flex; align-items:center; gap:0.5rem;
-    text-decoration:none;
-    padding:0.8rem 1.2rem;
-    font-family:"IBM Plex Mono", monospace;
-    font-weight:500; font-size:0.88rem;
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    transition:transform .18s ease, background .18s ease, border-color .18s ease;
-  }
-  .btn:hover{transform:translateY(-2px);}
-  .btn-primary{background:var(--amber); border-color:var(--amber); color:#1c1204;}
-  .btn-primary:hover{background:#f2bd5f;}
-  .btn-ghost{background:transparent; color:var(--ink);}
-  .btn-ghost:hover{border-color:var(--muted);}
-
-  /* blueprint diagram */
-  .blueprint{
-    position:relative;
-    border:1px solid var(--line);
-    background:rgba(9,28,50,0.55);
-    padding:0.6rem;
-  }
-  .blueprint svg{width:100%; height:auto; display:block;}
-
-  /* SECTIONS */
-  section{padding:4.6rem 0; border-bottom:1px solid var(--line); position:relative;}
-  section:last-of-type{border-bottom:none;}
-  h2{
-    font-family:"Space Grotesk", sans-serif;
-    font-weight:700;
-    font-size:clamp(1.7rem, 3.2vw, 2.25rem);
-    letter-spacing:-0.015em;
-    margin:0 0 0.55rem;
-  }
-  .lead{margin:0; color:var(--muted); max-width:36rem; font-size:1.02rem;}
-  .section-head{margin-bottom:2.2rem;}
-
-  .grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));}
-
-  .tile{
-    position:relative;
-    padding:1.4rem 1.3rem;
-    background:linear-gradient(160deg, rgba(25,79,130,0.35), rgba(15,42,74,0.35));
-    border:1px solid var(--line);
-    transition:border-color .2s ease, transform .2s ease;
-  }
-  .tile:hover{border-color:var(--amber); transform:translateY(-3px);}
-  .tile .tag{
-    font-family:"IBM Plex Mono", monospace;
-    font-size:0.7rem;
-    letter-spacing:0.1em;
-    color:var(--amber);
-    text-transform:uppercase;
-    display:block;
-    margin-bottom:0.5rem;
-  }
-  .tile h3{margin:0 0 0.4rem; font-size:1.03rem; font-weight:600; font-family:"Space Grotesk", sans-serif;}
-  .tile p, .tile li{margin:0; color:var(--muted); font-size:0.94rem;}
-  .tile ul{margin:0; padding-left:1.05rem; display:grid; gap:0.4rem;}
-  .tile code{color:var(--amber); font-family:"IBM Plex Mono", monospace; font-size:0.88em;}
-
-  /* code blocks */
-  pre{
-    background:#081c33;
-    border:1px solid var(--line);
-    padding:1.05rem 1.2rem;
-    overflow-x:auto;
-    margin:0 0 0.9rem;
-    font-family:"IBM Plex Mono", monospace;
-    font-size:0.88rem;
-    color:#cfe6d4;
-    border-left:2px solid var(--amber);
-  }
-  pre .prompt{color:var(--amber);}
-  .install-stack{display:grid; gap:0.9rem; max-width:640px;}
-
-  /* FLOW / build sequence */
-  .flow{display:grid; gap:0;}
-  .flow-item{
-    display:grid;
-    grid-template-columns: 5.2rem 1fr;
-    gap:1.2rem;
-    padding:1.5rem 0;
-    border-top:1px solid var(--line);
-  }
-  .flow-item:last-child{border-bottom:1px solid var(--line);}
-  .flow-step{
-    font-family:"IBM Plex Mono", monospace;
-    font-size:0.78rem;
-    letter-spacing:0.06em;
-    color:var(--amber);
-    padding-top:0.15rem;
-  }
-  .flow-step .n{display:block; font-family:"Space Grotesk", sans-serif; font-size:1.5rem; font-weight:700; color:var(--ink); line-height:1;}
-  .flow-item h3{margin:0 0 0.3rem; font-size:1.05rem; font-family:"Space Grotesk", sans-serif;}
-  .flow-item p{margin:0; color:var(--muted);}
-  .flow-item code{color:var(--amber); font-family:"IBM Plex Mono", monospace;}
-
-  /* AUTHOR / spec plate */
-  .plate{
-    display:grid;
-    grid-template-columns: minmax(150px, 190px) 1fr;
-    gap:2rem;
-    align-items:center;
-    padding:1.6rem;
-    border:1px solid var(--line);
-    background:linear-gradient(135deg, rgba(232,171,62,0.07), rgba(15,42,74,0.4));
-  }
-  .avatar-frame{
-    position:relative;
-    aspect-ratio:1;
-    border:1px solid var(--amber);
-    padding:6px;
-  }
-  .avatar-frame::before, .avatar-frame::after{
-    content:""; position:absolute; width:8px; height:8px; border:1px solid var(--amber); background:var(--cyan-1);
-  }
-  .avatar-frame::before{top:-4px; left:-4px;}
-  .avatar-frame::after{bottom:-4px; right:-4px;}
-  .avatar-frame img{width:100%; height:100%; object-fit:cover; object-position:center 25%; display:block;}
-  .avatar-fallback{
-    width:100%; height:100%;
-    display:flex; align-items:center; justify-content:center;
-    font-family:"Space Grotesk", sans-serif;
-    font-weight:700; font-size:2.4rem; color:var(--amber);
-    background:#081c33;
-  }
-  .plate-copy .name{
-    font-family:"Space Grotesk", sans-serif; font-weight:700;
-    font-size:clamp(1.35rem, 2.6vw, 1.75rem); letter-spacing:-0.02em; margin:0 0 0.2rem;
-  }
-  .plate-copy .role{margin:0 0 0.8rem; color:var(--amber); font-family:"IBM Plex Mono", monospace; font-size:0.85rem; letter-spacing:0.04em;}
-  .plate-copy p{margin:0; color:var(--muted); max-width:36rem;}
-  .plate-copy .site{
-    display:inline-block; margin-top:1rem; text-decoration:none;
-    font-family:"IBM Plex Mono", monospace; font-size:0.85rem;
-    color:var(--ink); border-bottom:1px solid var(--amber); padding-bottom:0.15rem;
-  }
-
-  footer{
-    padding:1.8rem 0 2.6rem;
-    color:var(--muted);
-    font-family:"IBM Plex Mono", monospace;
-    font-size:0.8rem;
-    display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.6rem;
-  }
-  footer a{text-decoration:none; border-bottom:1px solid rgba(232,171,62,0.5); color:var(--ink);}
-
-  /* ADMIN GALLERY */
-  .shot-grid{
-    display:grid;
-    gap:1rem;
-    grid-template-columns:repeat(2, minmax(0, 1fr));
-    margin-top:1.6rem;
-  }
-  .shot{
-    position:relative;
-    border:1px solid var(--line);
-    background:rgba(9,28,50,0.55);
-    padding:0.55rem;
-    transition:border-color .2s ease, transform .2s ease;
-  }
-  .shot:hover{border-color:var(--amber); transform:translateY(-3px);}
-  .shot img{
-    width:100%;
-    height:auto;
-    display:block;
-    border:1px solid var(--line-soft);
-    background:#081c33;
-  }
-  .shot figcaption{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    gap:0.75rem;
-    padding:0.7rem 0.25rem 0.15rem;
-    font-family:"IBM Plex Mono", monospace;
-    font-size:0.78rem;
-    letter-spacing:0.04em;
-  }
-  .shot figcaption .label{color:var(--amber); text-transform:uppercase;}
-  .shot figcaption .desc{color:var(--muted); text-align:right;}
-  .admin-run{
-    display:grid;
-    gap:0.9rem;
-    max-width:640px;
-    margin-top:1.4rem;
-  }
-
-  :focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
-
-  @media (max-width: 860px){
-    .hero-grid{grid-template-columns:1fr;}
-    .plate{grid-template-columns:1fr; text-align:left;}
-    .avatar-frame{max-width:170px;}
-    .flow-item{grid-template-columns:3.4rem 1fr;}
-    .shot-grid{grid-template-columns:1fr;}
-  }
-</style>
+<link rel="stylesheet" href="docs.css" />
 </head>
 <body>
 
 <div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
 
 <nav class="nav">
-  <div class="wrap">
+  <div class="wrap nav-bar">
     <a class="logo" href="#top"><span class="glyph">தமிழ்</span>PY</a>
-    <div class="navlinks">
-      <a href="#usecases">Use cases</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
       <a href="#install">Install</a>
-      <a href="#flow">Build sequence</a>
       <a href="#features">Features</a>
+      <a href="#platform">Platform</a>
       <a href="#admin">Admin</a>
       <a href="#auth">Auth</a>
-      <a href="#schema">Schema</a>
-      <a href="#commands">Commands</a>
+      <a href="schema.html">Schema</a>
+      <a href="#commands">CLI</a>
       <a href="#guide">Guide</a>
       <a href="#author">Author</a>
     </div>
@@ -371,9 +38,9 @@
   <div class="wrap">
     <div class="hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow">Schema-driven Python framework</p>
+        <p class="eyebrow">Schema-driven Python framework · v0.1.9</p>
         <h1>Draft the schema.<br>Ship the <span class="accent">API</span>.</h1>
-        <p class="lead">tamilPY reads one <code class="mono">schema.tpy</code> file and generates a fully layered FastAPI app — models, migrations, services, and routes — for SQLite, PostgreSQL, MySQL, or MongoDB. You write the fields. It writes the plumbing.</p>
+        <p class="lead">tamilPY reads one <code class="mono">schema.tpy</code> file and generates a fully layered FastAPI app — models, migrations, services, and routes — for SQLite, PostgreSQL, MySQL, or MongoDB. The platform includes Query Builder, events, queues, cache, validation, kernel providers, storage, route/config caching, and <code class="mono">tpy watch</code>.</p>
         <div class="cta-row">
           <a class="btn btn-primary" href="#install">$ pip install tamilPY</a>
           <a class="btn btn-ghost" href="#flow">See the build sequence</a>
@@ -483,7 +150,9 @@
       <p class="lead">Install from PyPI, then scaffold your first project.</p>
     </div>
     <div class="install-stack">
-      <pre><span class="prompt">$</span> pip install tamilPY</pre>
+      <pre><span class="prompt">$</span> pip install tamilPY
+<span class="prompt">$</span> pip install "tamilPY[redis]"    <span style="color:var(--muted)"># optional</span>
+<span class="prompt">$</span> pip install "tamilPY[all]"      <span style="color:var(--muted)"># all drivers</span></pre>
       <pre><span class="prompt">$</span> tpy new myapp
 <span class="prompt">$</span> cd myapp</pre>
     </div>
@@ -545,56 +214,228 @@
       <p class="lead">One schema file drives generation, migrations, and a layered FastAPI app.</p>
     </div>
     <div class="grid">
-      <article class="tile">
+      <a class="tile" href="schema.html">
         <span class="tag">Feature 01</span>
         <h3>Schema-first generation</h3>
         <p>Edit <code>schema.tpy</code>, run <code>tpy build</code> or <code>tpy crud</code>, and get models, migrations, schemas, repositories, services, controllers, and routes.</p>
-      </article>
-      <article class="tile">
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="database.html">
         <span class="tag">Feature 02</span>
         <h3>Multi-database</h3>
         <p>SQLite, PostgreSQL, MySQL, or MongoDB via the build wizard. Reconfigure anytime with <code>tpy db configure</code>.</p>
-      </article>
-      <article class="tile">
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="migrate.html">
         <span class="tag">Feature 03</span>
         <h3>Auto database create</h3>
         <p><code>tpy migrate</code> creates the Postgres/MySQL database when missing, then applies ordered migrations.</p>
-      </article>
-      <article class="tile">
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="crud-api.html">
         <span class="tag">Feature 04</span>
         <h3>Full CRUD REST API</h3>
         <p>Each model gets list, show, create, update, and delete endpoints under a plural prefix (e.g. <code>/users</code>).</p>
-      </article>
-      <article class="tile">
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="layers.html">
         <span class="tag">Feature 05</span>
         <h3>Layered architecture</h3>
         <p>Repository → Service → Controller → Route — generated consistently so every project looks the same.</p>
-      </article>
-      <article class="tile">
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="workflow.html">
         <span class="tag">Feature 06</span>
         <h3>Migrate · seed · serve</h3>
         <p>Apply schema with migrations, load sample data with seeders, run the API with <code>tpy serve</code> or <code>python main.py</code>.</p>
-      </article>
-      <article class="tile">
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="logging-health.html">
         <span class="tag">Feature 07</span>
         <h3>Logging &amp; health</h3>
         <p>Console + <code>storage/logs/app.log</code> via <code>app/logger.py</code>. Probe liveness with <code>GET /health</code>.</p>
-      </article>
-      <article class="tile">
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="admin.html">
         <span class="tag">Feature 08</span>
         <h3>React admin dashboard</h3>
-        <p><code>tpy admin</code> generates a Vite + React dashboard in <code>admin/</code> with list, create, edit, and delete for every schema model. <a href="#admin" style="color:var(--amber);">See screenshots →</a></p>
-      </article>
-      <article class="tile">
+        <p><code>tpy admin</code> generates a Vite + React dashboard in <code>admin/</code> with list, create, edit, and delete for every schema model.</p>
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="auth.html">
         <span class="tag">Feature 09</span>
         <h3>JWT auth</h3>
-        <p><code>tpy auth</code> adds login, register, refresh, and logout with AuthRole + User defaults. Dashboard access is limited to super-admin and developer. <a href="#auth" style="color:var(--amber);">See auth guide →</a></p>
-      </article>
-      <article class="tile">
+        <p><code>tpy auth</code> adds login, register, refresh, and logout with AuthRole + User defaults. Dashboard access is limited to super-admin and developer.</p>
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="doctor.html">
         <span class="tag">Feature 10</span>
         <h3>Doctor &amp; DB tools</h3>
         <p><code>tpy doctor</code> checks project files. <code>tpy db info</code> / <code>tpy db ping</code> inspect and test the connection.</p>
-      </article>
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="query.html">
+        <span class="tag">01–02</span>
+        <h3>Query &amp; relations</h3>
+        <p>Fluent <code>QueryBuilder</code>. Schema <code>relations { }</code> with eager <code>with_()</code> loading.</p>
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="events.html">
+        <span class="tag">03–05</span>
+        <h3>Events · Queue · Schedule</h3>
+        <p>Sync event bus, background jobs (<code>tpy queue work</code>), cron-style <code>tpy schedule run</code>.</p>
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="cache.html">
+        <span class="tag">06–08</span>
+        <h3>Cache · API · Validation</h3>
+        <p>Memory / file / Redis cache. <code>ApiResponse</code> envelopes. Pipe-rule <code>validate()</code>.</p>
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="kernel.html">
+        <span class="tag">09–13</span>
+        <h3>Kernel · Middleware · Health</h3>
+        <p><code>Application</code> providers &amp; plugins, middleware groups, <code>/health</code>, lifecycle hooks.</p>
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="logging-config.html">
+        <span class="tag">14–17</span>
+        <h3>Log · Config · Storage · Routes</h3>
+        <p>Log channels, nested <code>Config</code>, file storage, <code>tpy route cache</code>.</p>
+        <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="cli-watch.html">
+        <span class="tag">18–20</span>
+        <h3>Optimize · CLI · Watch</h3>
+        <p><code>tpy optimize</code>, richer CLI (<code>-V</code>, <code>about</code>), <code>tpy watch</code> rebuild on schema change.</p>
+        <span class="more">Read guide →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="platform">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Runtime platform</p>
+      <h2>API reference (Features 1–20)</h2>
+      <p class="lead">Professional documentation for the tamilPY runtime — Query Builder through watch mode — in one GitHub Pages guide.</p>
+    </div>
+
+    <div class="grid">
+      <a class="tile" href="query.html">
+        <span class="tag">Query</span>
+        <h3>Query Builder &amp; relations</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">repo.query().where("status", "draft").order_by("created_at").get()
+repo.query().with_("author").find(id)</pre>
+        <p style="margin-top:0.7rem;">Schema <code>relations { belongs_to User as author via user_id }</code>. Eager load with <code>with_()</code>.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="events.html">
+        <span class="tag">Events</span>
+        <h3>Event &amp; Listener</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">bus = EventDispatcher()
+bus.listen(OrderPlaced, LogOrder())
+bus.dispatch(OrderPlaced("ord_1"))</pre>
+        <p style="margin-top:0.7rem;"><code>listen</code> · <code>dispatch</code> · <code>dispatch_until</code> · wildcard <code>"*"</code> · <code>event.stop()</code>.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="queue.html">
+        <span class="tag">Queue</span>
+        <h3>Background jobs</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">Queue(SyncQueueDriver()).push(SendWelcomeEmail("u1"))
+# CLI: tpy queue table | tpy queue work --driver database</pre>
+        <p style="margin-top:0.7rem;">Drivers: <code>sync</code>, <code>database</code>, <code>redis</code> (<code>tamilPY[redis]</code>).</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="schedule.html">
+        <span class="tag">Schedule</span>
+        <h3>Task scheduler</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;"># app/schedule.py
+def register(schedule):
+    schedule.command("cache:clear").daily()
+# CLI: tpy schedule run | list</pre>
+        <p style="margin-top:0.7rem;">Cron helpers, overlap locks, due-task runner.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="cache.html">
+        <span class="tag">Cache</span>
+        <h3>Cache manager</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">cache.put("key", value, ttl=60)
+cache.get("key", default=None)
+# CLI: tpy cache clear</pre>
+        <p style="margin-top:0.7rem;">Stores: memory, file (<code>storage/framework/cache</code>), Redis.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="api-response.html">
+        <span class="tag">HTTP</span>
+        <h3>ApiResponse</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">return ApiResponse.success(data)
+return ApiResponse.created(row)
+return ApiResponse.paginated(items, meta)
+return ApiResponse.validation_error(exc)</pre>
+        <p style="margin-top:0.7rem;">Uniform JSON envelopes for FastAPI controllers.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="validation.html">
+        <span class="tag">Validation</span>
+        <h3>Pipe rules</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">data = validate(payload, {
+  "email": "required|email",
+  "age": "required|integer|min:18",
+  "role": "nullable|in:admin,user",
+})</pre>
+        <p style="margin-top:0.7rem;">Custom rules via <code>Validator.extend(...)</code>.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="kernel.html">
+        <span class="tag">Kernel</span>
+        <h3>Application · Providers · Plugins</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">Application(".").register(AppServiceProvider).create()
+# or Application(".").mount(existing_fastapi)</pre>
+        <p style="margin-top:0.7rem;">Container <code>make()</code> / <code>singleton()</code>. Entry-point plugins supported.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="middleware-health.html">
+        <span class="tag">HTTP</span>
+        <h3>Middleware · Health · Lifecycle</h3>
+        <ul>
+          <li>Middleware groups via <code>MiddlewareManager</code></li>
+          <li><code>GET /health</code> · <code>GET /health/ready</code></li>
+          <li>boot / shutdown / before / after / exception hooks</li>
+        </ul>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="logging-config.html">
+        <span class="tag">Ops</span>
+        <h3>Logging &amp; Config</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">get_logger("app").info("booted")
+cfg = Config.load_auto(".")
+cfg.get("app.name")
+# tpy config show | cache | status | clear</pre>
+        <p style="margin-top:0.7rem;">Prefer cache with <code>TPY_CONFIG_CACHE=1</code>.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="storage-routes.html">
+        <span class="tag">Storage</span>
+        <h3>Files &amp; route cache</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">Storage.disk("local").put("a.txt", b"hi")
+# tpy route cache | list --cached | clear
+# tpy optimize   # config + routes</pre>
+        <p style="margin-top:0.7rem;">Local disk + S3-ready driver surface.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="cli-watch.html">
+        <span class="tag">DX</span>
+        <h3>CLI UX &amp; Watch</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">tpy -V
+tpy about
+tpy commands
+tpy watch                 # rebuild on schema.tpy change
+tpy watch --with-db</pre>
+        <p style="margin-top:0.7rem;">Pair with <code>tpy serve --reload</code> in a second terminal.</p>
+      <span class="more">Read guide →</span>
+      </a>
     </div>
   </div>
 </section>
@@ -841,11 +682,14 @@ model Post {
     <div class="grid" style="margin-top:1.4rem;">
       <article class="tile">
         <span class="tag">Relations</span>
-        <h3>Foreign keys</h3>
-        <p>Use <code>references &lt;Model&gt;</code> (or <code>foreign &lt;Model&gt;</code>) on a field. It defaults to the target's <code>id</code>; target a column with <code>references Model.column</code>.</p>
-        <pre style="margin:0.7rem 0 0; padding:0.7rem; font-size:0.8rem;">user_id: uuid references User
-author: uuid references User.id</pre>
-        <p style="margin-top:0.7rem;">Compiles to <code>REFERENCES "user" ("id")</code>. Define the referenced model earlier in the schema so its migration runs first.</p>
+        <h3>Foreign keys &amp; ORM</h3>
+        <p>Use <code>references &lt;Model&gt;</code> on a field. Optional <code>relations { }</code> for eager loading:</p>
+        <pre style="margin:0.7rem 0 0; padding:0.7rem; font-size:0.78rem;">user_id: uuid references User
+relations {
+  belongs_to User as author via user_id
+  has_many Comment as comments
+}</pre>
+        <p style="margin-top:0.7rem;">Define referenced models earlier so migrations run in order.</p>
       </article>
       <article class="tile">
         <span class="tag">Defaults</span>
@@ -941,6 +785,28 @@ status: string default "draft"</pre>
           <li><code>tpy serve --reload / --no-reload</code></li>
           <li><code>python main.py</code> — root launcher</li>
           <li><code>GET /health</code> — health check</li>
+        </ul>
+      </article>
+      <article class="tile">
+        <span class="tag">Platform</span>
+        <h3>Queue · Schedule · Cache</h3>
+        <ul>
+          <li><code>tpy queue table</code> — create job tables</li>
+          <li><code>tpy queue work</code> — run worker</li>
+          <li><code>tpy schedule run</code> — run due tasks</li>
+          <li><code>tpy schedule list</code> — list schedule</li>
+          <li><code>tpy cache clear</code> — flush cache</li>
+        </ul>
+      </article>
+      <article class="tile">
+        <span class="tag">Platform</span>
+        <h3>Config · Routes · Optimize</h3>
+        <ul>
+          <li><code>tpy config show | cache | status | clear</code></li>
+          <li><code>tpy route cache | list | clear</code></li>
+          <li><code>tpy optimize</code> — config + route cache</li>
+          <li><code>tpy watch</code> — rebuild on schema change</li>
+          <li><code>tpy about</code> · <code>tpy commands</code> · <code>tpy -V</code></li>
         </ul>
       </article>
     </div>
@@ -1069,10 +935,10 @@ status: string default "draft"</pre>
         <h3>Runtime</h3>
         <ul>
           <li><code>tpy serve</code> — start API server</li>
-          <li><code>python main.py</code> — root launcher</li>
-          <li><code>app/logger.py</code> — client logger</li>
+          <li><code>tpy watch</code> — rebuild on schema change</li>
+          <li><code>tpy optimize</code> — production caches</li>
           <li><code>storage/logs/app.log</code> — log file</li>
-          <li><code>/health</code> — health endpoint</li>
+          <li><code>/health</code> · <code>/health/ready</code></li>
           <li><code>/docs</code> — Swagger UI</li>
         </ul>
       </article>
@@ -1116,12 +982,38 @@ status: string default "draft"</pre>
   </div>
 </section>
 
-<footer>
-  <div class="wrap" style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.6rem;">
-    <span>tamilPY Framework · Client guide · REV 07</span>
-    <span>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></span>
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Schema-driven FastAPI framework — client study guides.</p>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
   </div>
 </footer>
 
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
 </body>
 </html>

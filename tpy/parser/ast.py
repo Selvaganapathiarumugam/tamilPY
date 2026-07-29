@@ -38,10 +38,27 @@ class EnumNode:
 
 
 @dataclass(slots=True)
+class RelationNode:
+    """
+    Declared ORM relationship inside a model ``relations { }`` block.
+    """
+
+    kind: str
+    model: str
+    name: str
+    foreign_key: str | None = None
+    local_key: str | None = None
+    through: str | None = None
+    pivot_foreign_key: str | None = None
+    pivot_related_key: str | None = None
+
+
+@dataclass(slots=True)
 class ModelNode:
     name: str
     fields: list[FieldNode] = field(default_factory=list)
     unique_together: list[list[str]] = field(default_factory=list)
+    relations: list[RelationNode] = field(default_factory=list)
 
 
 @dataclass(slots=True)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tamilPY"
-version = "0.1.8"
+version = "0.1.9"
 description = "TamilPY Framework — schema-driven Python web framework"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -33,11 +33,13 @@ sqlite = []
 postgres = ["sqlalchemy", "psycopg2-binary"]
 mysql = ["sqlalchemy", "pymysql"]
 mongodb = ["pymongo"]
+redis = ["redis>=5"]
 all = [
     "sqlalchemy",
     "psycopg2-binary",
     "pymysql",
     "pymongo",
+    "redis>=5",
 ]
 dev = [
     "pytest",

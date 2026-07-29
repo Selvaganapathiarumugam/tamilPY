@@ -29,8 +29,8 @@ def register(app: typer.Typer) -> None:
             Console.info("Next: pip install -r requirements.txt")
             Console.info("Then: tpy migrate && tpy seed && tpy serve")
             Console.info(
-                "Bootstrap admin email: admin@example.com "
-                "(password written to storage/auth_bootstrap.txt on seed)"
+                "After seed, open storage/auth_bootstrap.txt "
+                "for admin@example.com password"
             )
             Console.info(
                 "Admin dashboard roles: super-admin, developer "

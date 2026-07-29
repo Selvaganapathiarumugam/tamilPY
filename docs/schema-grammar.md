@@ -66,6 +66,40 @@ model Enrollment {
 }
 ```
 
+## Relationships
+
+Optional `relations { }` block inside a model (v0.1.9+):
+
+```tpy
+model User {
+  id: uuid primary
+  email: string unique required
+  relations {
+    has_many Post as posts
+    has_one Profile as profile
+    belongs_to_many AuthRole as roles through UserRole
+  }
+}
+
+model Post {
+  id: uuid primary
+  user_id: uuid references User on_delete cascade
+  title: string required
+  relations {
+    belongs_to User as author via user_id
+  }
+}
+```
+
+| Kind | Meaning | Notes |
+|------|---------|--------|
+| `belongs_to Model as name via fk` | Parent holds FK | `via` defaults to `model_id` |
+| `has_many Model as name` | Related holds FK | FK defaults to `parent_id` |
+| `has_one Model as name` | Same as has_many, one row | |
+| `belongs_to_many Model as name through Pivot` | M2M via pivot model | Pivot model must exist in schema |
+
+Eager load at runtime: `repo.query().with_("author", "tags").get()`.
+
 ## Comments
 
 Lines starting with `#` are comments.

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Validation engine — tamilPY Docs</title>
+<meta name="description" content="Validate request payloads with pipe rules before they reach your services." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Validation engine</span>
+    </div>
+    <p class="eyebrow">Platform 08 · Study guide</p>
+    <h1>Validation engine</h1>
+    <p class="lead">Validate request payloads with pipe rules before they reach your services.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>How to call validate() with rule strings</li><li>How ValidationException becomes an API error</li><li>How to register a custom rule</li></ul></div>
+
+<h2>1. Setup</h2>
+<pre>from tpy.validation import validate, ValidationException, Validator
+from tpy.http import ApiResponse</pre>
+<p>No extra dependency. Use in controllers/services on incoming dict payloads.</p>
+
+<h2>2. Basic usage</h2>
+<pre>try:
+    data = validate(
+        payload,
+        {
+            "email": "required|email",
+            "age": "required|integer|min:18",
+            "password": "required|confirmed",
+            "role": "nullable|in:admin,user",
+        },
+    )
+except ValidationException as exc:
+    return ApiResponse.validation_error(exc)
+
+# data is the cleaned/accepted input
+return ApiResponse.success(service.create(data))</pre>
+
+<h2>3. How it works</h2>
+<ol>
+  <li>Rules are pipe-separated strings (<code>required|email|min:3</code>).</li>
+  <li>The engine runs each rule in order for every field.</li>
+  <li>On failure it raises <code>ValidationException</code> with per-field messages.</li>
+  <li><code>ApiResponse.validation_error(exc)</code> turns that into HTTP 422 JSON.</li>
+</ol>
+
+<table class="doc-table">
+  <thead><tr><th>Rule</th><th>Example</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>required</code></td><td><code>required</code></td><td>Must be present/non-empty</td></tr>
+    <tr><td><code>nullable</code></td><td><code>nullable|email</code></td><td>Skip other rules when empty</td></tr>
+    <tr><td><code>email</code> / <code>uuid</code> / <code>url</code></td><td><code>email</code></td><td>Format checks</td></tr>
+    <tr><td><code>integer</code> / <code>numeric</code> / <code>boolean</code></td><td><code>integer</code></td><td>Type checks</td></tr>
+    <tr><td><code>min</code> / <code>max</code> / <code>between</code></td><td><code>min:18</code></td><td>Bounds</td></tr>
+    <tr><td><code>in</code> / <code>not_in</code></td><td><code>in:admin,user</code></td><td>Allow-list</td></tr>
+    <tr><td><code>confirmed</code></td><td><code>confirmed</code></td><td>Needs <code>field_confirmation</code></td></tr>
+    <tr><td><code>regex</code></td><td><code>regex:^[A-Z]+$</code></td><td>Pattern</td></tr>
+  </tbody>
+</table>
+
+<h2>4. Custom rules</h2>
+<pre>Validator.extend(
+    "odd",
+    lambda attr, value, data: int(value) % 2 == 1,
+    "Value must be odd.",
+)
+Validator.make({"n": 3}, {"n": "odd"}).validate()</pre>
+      <div class="pager">
+        <a href="api-response.html"><span class="label">Previous</span>ApiResponse helpers</a>
+        <a href="kernel.html"><span class="label">Next</span>Application kernel</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ from tpy.parser.ast import (
     ForeignKeyNode,
     ModelNode,
     ProgramNode,
+    RelationNode,
 )
 from tpy.parser.tokens import TokenType
 
@@ -83,6 +84,7 @@ class Parser:
 
         fields = []
         unique_together: list[list[str]] = []
+        relations: list[RelationNode] = []
 
         while not self.match(TokenType.RBRACE):
             if self.match(TokenType.NEWLINE):
@@ -93,6 +95,10 @@ class Parser:
                 unique_together.append(self.parse_unique_together())
                 continue
 
+            if self.match(TokenType.RELATIONS):
+                relations.extend(self.parse_relations_block())
+                continue
+
             fields.append(self.parse_field())
 
         self.consume(TokenType.RBRACE)
@@ -100,6 +106,85 @@ class Parser:
             name=name,
             fields=fields,
             unique_together=unique_together,
+            relations=relations,
+        )
+
+    def parse_relations_block(self) -> list[RelationNode]:
+        """Parse ``relations { ... }`` inside a model."""
+        self.consume(TokenType.RELATIONS)
+        self.consume(TokenType.LBRACE)
+        relations: list[RelationNode] = []
+        while not self.match(TokenType.RBRACE):
+            if self.match(TokenType.NEWLINE):
+                self.advance()
+                continue
+            relations.append(self.parse_relation())
+        self.consume(TokenType.RBRACE)
+        return relations
+
+    def parse_relation(self) -> RelationNode:
+        """
+        Parse one relation declaration.
+
+        Examples::
+
+            belongs_to User as author via user_id
+            has_many Post as posts
+            has_one Profile as profile
+            belongs_to_many Tag as tags through PostTag
+        """
+        kind_token = self.consume_any(
+            TokenType.BELONGS_TO,
+            TokenType.HAS_MANY,
+            TokenType.HAS_ONE,
+            TokenType.BELONGS_TO_MANY,
+        )
+        kind = kind_token.value.lower()
+        model = self.consume(TokenType.IDENTIFIER).value
+
+        name = model.lower()
+        foreign_key = None
+        through = None
+
+        while self.match(TokenType.AS, TokenType.VIA, TokenType.THROUGH):
+            if self.match(TokenType.AS):
+                self.advance()
+                name = self.consume(TokenType.IDENTIFIER).value
+                continue
+            if self.match(TokenType.VIA):
+                self.advance()
+                foreign_key = self.consume(TokenType.IDENTIFIER).value
+                continue
+            if self.match(TokenType.THROUGH):
+                self.advance()
+                through = self.consume(TokenType.IDENTIFIER).value
+                continue
+
+        if kind == "belongs_to" and foreign_key is None:
+            foreign_key = f"{model.lower()}_id"
+        if kind in {"has_many", "has_one"} and foreign_key is None:
+            # Default FK on related table: ParentName_id lowercased
+            # filled later by generators using parent model; store None here
+            # and let registry/codegen set it. Parser leaves None.
+            pass
+        if kind == "belongs_to_many" and through is None:
+            self.error("belongs_to_many requires 'through PivotModel'")
+
+        pivot_foreign_key = None
+        pivot_related_key = None
+        if through:
+            # Defaults applied when parent model name is known at registry time
+            pivot_foreign_key = None
+            pivot_related_key = f"{model.lower()}_id"
+
+        return RelationNode(
+            kind=kind,
+            model=model,
+            name=name,
+            foreign_key=foreign_key,
+            through=through,
+            pivot_foreign_key=pivot_foreign_key,
+            pivot_related_key=pivot_related_key,
         )
 
     def parse_unique_together(self) -> list[str]:

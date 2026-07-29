@@ -58,6 +58,18 @@ class TokenType(Enum):
     NO_ACTION = auto()
 
     # =========================
+    # Relationships
+    # =========================
+    RELATIONS = auto()
+    BELONGS_TO = auto()
+    HAS_MANY = auto()
+    HAS_ONE = auto()
+    BELONGS_TO_MANY = auto()
+    AS = auto()
+    VIA = auto()
+    THROUGH = auto()
+
+    # =========================
     # Symbols
     # =========================
     LBRACE = auto()
@@ -115,4 +127,12 @@ KEYWORDS = {
     "set_null": TokenType.SET_NULL,
     "restrict": TokenType.RESTRICT,
     "no_action": TokenType.NO_ACTION,
+    "relations": TokenType.RELATIONS,
+    "belongs_to": TokenType.BELONGS_TO,
+    "has_many": TokenType.HAS_MANY,
+    "has_one": TokenType.HAS_ONE,
+    "belongs_to_many": TokenType.BELONGS_TO_MANY,
+    "as": TokenType.AS,
+    "via": TokenType.VIA,
+    "through": TokenType.THROUGH,
 }

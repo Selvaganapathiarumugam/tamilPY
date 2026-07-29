@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Application kernel — tamilPY Docs</title>
+<meta name="description" content="Boot services through Application, providers, and optional plugins — dual-mode with FastAPI." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Application kernel</span>
+    </div>
+    <p class="eyebrow">Platform 09–10 · Study guide</p>
+    <h1>Application kernel</h1>
+    <p class="lead">Boot services through Application, providers, and optional plugins — dual-mode with FastAPI.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>create() vs mount() modes</li><li>How ServiceProviders register and boot</li><li>How to resolve services from the container</li></ul></div>
+
+<h2>1. Setup — recommended create()</h2>
+<pre>from tpy.kernel import Application
+
+def create_app():
+    return (
+        Application(base_path=".")
+        .with_framework_providers()
+        .register(AppServiceProvider)
+        .create(title="My App")
+    )</pre>
+<p>Point uvicorn at this factory, or call it from <code>app/main.py</code>.</p>
+
+<h2>2. Setup — mount onto existing FastAPI</h2>
+<pre>from fastapi import FastAPI
+from tpy.kernel import Application
+
+api = FastAPI()
+Application(".").with_framework_providers().mount(api)
+# api.state.tpy is the Application</pre>
+
+<h2>3. How providers work</h2>
+<pre>from tpy.kernel import ServiceProvider, Application
+from tpy.cache import Cache, MemoryStore
+
+class CacheServiceProvider(ServiceProvider):
+    def register(self, app: Application) -> None:
+        app.singleton("cache", lambda c: Cache(MemoryStore()))
+
+    def boot(self, app: Application) -> None:
+        # all bindings exist; safe to resolve
+        app.make("cache").put("booted", True, ttl=30)</pre>
+<ol>
+  <li>Every provider <code>register()</code> runs first (bindings only).</li>
+  <li>Then every <code>boot()</code> runs (can resolve dependencies).</li>
+  <li>Fetch services with <code>app.make("cache")</code>.</li>
+</ol>
+
+<div class="callout">Generated <code>app/main.py</code> still works without the kernel (soft-break). Adopt Application when you need shared services, plugins, lifecycle, and health wiring.</div>
+      <div class="pager">
+        <a href="validation.html"><span class="label">Previous</span>Validation engine</a>
+        <a href="middleware-health.html"><span class="label">Next</span>Middleware · Health · Lifecycle</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

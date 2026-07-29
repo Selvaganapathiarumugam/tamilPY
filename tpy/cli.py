@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import importlib
 import pkgutil
+from typing import Optional
 
 import typer
 
@@ -14,6 +15,8 @@ from tpy.exceptions import TpyError
 app = typer.Typer(
     help="tamilPY — schema-driven Python web framework",
     no_args_is_help=True,
+    rich_markup_mode="rich",
+    context_settings={"help_option_names": ["-h", "--help"]},
 )
 
 
@@ -26,11 +29,39 @@ def _register_commands() -> None:
             module.register(app)
 
 
+def _package_version() -> str:
+    try:
+        from importlib.metadata import version as pkg_version
+
+        return pkg_version("tamilPY")
+    except Exception:
+        from tpy import __version__
+
+        return __version__
+
+
+def _version_option(value: bool) -> None:
+    if value:
+        from tpy.utils.console import Console
+
+        Console.info(f"tamilPY {_package_version()}")
+        raise typer.Exit()
+
+
 _register_commands()
 
 
 @app.callback()
-def _root() -> None:
+def _root(
+    version: Optional[bool] = typer.Option(
+        None,
+        "--version",
+        "-V",
+        help="Show version and exit.",
+        callback=_version_option,
+        is_eager=True,
+    ),
+) -> None:
     """tamilPY CLI."""
 
 

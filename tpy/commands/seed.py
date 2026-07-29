@@ -38,6 +38,10 @@ def register(app: typer.Typer) -> None:
             for name in ran:
                 Console.success(f"Seeded: {name}")
 
+            bootstrap = root / "storage" / "auth_bootstrap.txt"
+            if bootstrap.exists():
+                Console.info(f"Auth bootstrap credentials: {bootstrap}")
+
             Console.success("Database seeding completed.")
         except Exception as error:
             Console.error(str(error))

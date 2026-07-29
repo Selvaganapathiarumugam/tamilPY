@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Migrate · seed · serve — tamilPY Docs</title>
+<meta name="description" content="The everyday developer loop: apply schema, load sample data, run the API." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Migrate · seed · serve</span>
+    </div>
+    <p class="eyebrow">Feature 06 · Study guide</p>
+    <h1>Migrate · seed · serve</h1>
+    <p class="lead">The everyday developer loop: apply schema, load sample data, run the API.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>The migrate → seed → serve loop</li><li>What each command changes on disk / DB</li><li>How to combine with watch + reload</li></ul></div>
+
+<h2>1. Setup</h2>
+<p>Project must already exist (<code>tpy new</code> + <code>tpy build</code>).</p>
+
+<pre><span class="prompt">$</span> tpy migrate
+<span class="prompt">$</span> tpy seed
+<span class="prompt">$</span> tpy serve</pre>
+
+<h2>2. What each step does</h2>
+<ul>
+  <li><strong style="color:var(--ink);">migrate</strong> — create DB if needed; apply pending migrations.</li>
+  <li><strong style="color:var(--ink);">seed</strong> — run Python seeders in <code>database/seeds/</code> (demo users, roles, sample rows).</li>
+  <li><strong style="color:var(--ink);">serve</strong> — start uvicorn on <code>app.main:app</code> (reload on by default).</li>
+</ul>
+
+<h2>3. Recommended local DX</h2>
+<pre><span class="prompt">#</span> terminal 1
+<span class="prompt">$</span> tpy serve --reload
+
+<span class="prompt">#</span> terminal 2
+<span class="prompt">$</span> tpy watch</pre>
+<p>Watch rebuilds layers when <code>schema.tpy</code> changes; serve reloads Python. After structural DB changes, still run <code>tpy migrate</code>.</p>
+
+<h2>4. Common mistakes</h2>
+<ul>
+  <li>Seeding before migrate (tables missing).</li>
+  <li>Expecting seed to be idempotent without writing seeds that way.</li>
+</ul>
+      <div class="pager">
+        <a href="layers.html"><span class="label">Previous</span>Layered architecture</a>
+        <a href="logging-health.html"><span class="label">Next</span>Logging & health</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

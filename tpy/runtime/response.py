@@ -4,6 +4,10 @@ from typing import Any
 class Response:
     """
     Lightweight response helper for JSON/API payloads.
+
+    Prefer ``tpy.http.ApiResponse`` for FastAPI ``JSONResponse`` envelopes
+    in application controllers. This class remains for simple dict payloads
+    and backward compatibility.
     """
 
     def __init__(
@@ -37,6 +41,29 @@ class Response:
             status_code=status_code,
         )
 
+    @classmethod
+    def success(
+        cls,
+        data: Any = None,
+        message: str | None = None,
+        status_code: int = 200,
+    ) -> "Response":
+        """
+        Create a success envelope (dict-only).
+
+        For FastAPI responses use ``tpy.http.ApiResponse.success``.
+        """
+        from tpy.http import ApiResponse
+
+        return cls(
+            data=ApiResponse.payload(
+                success=True,
+                data=data,
+                message=message,
+            ),
+            status_code=status_code,
+        )
+
     def to_dict(self) -> dict[str, Any]:
         """Serialize the response envelope."""
         return {
@@ -44,3 +71,13 @@ class Response:
             "headers": self.headers,
             "data": self.data,
         }
+
+    def to_fastapi(self):
+        """Convert to FastAPI ``JSONResponse`` via ``ApiResponse``."""
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(
+            content=self.data,
+            status_code=self.status_code,
+            headers=self.headers or None,
+        )

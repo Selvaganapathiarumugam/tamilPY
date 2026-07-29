@@ -14,5 +14,8 @@ def register(app: typer.Typer) -> None:
         try:
             current = pkg_version("tamilPY")
         except PackageNotFoundError:
-            current = "0.0.0 (not installed)"
+            from tpy import __version__
+
+            current = f"{__version__} (editable / not installed)"
+        Console.banner(current)
         Console.info(f"tamilPY {current}")

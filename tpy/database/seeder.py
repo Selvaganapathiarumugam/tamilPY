@@ -11,8 +11,18 @@ class Seeder(ABC):
     Base class for database seed scripts.
     """
 
-    def __init__(self, db: Any) -> None:
+    def __init__(
+        self,
+        db: Any,
+        project_root: Path | str | None = None,
+    ) -> None:
         self.db = db
+        if project_root is not None:
+            self.project_root = Path(project_root)
+        else:
+            self.project_root = Path(
+                getattr(db, "project_root", Path("."))
+            )
 
     @abstractmethod
     def run(self) -> None:
@@ -78,6 +88,6 @@ class SeedRunner:
                 and issubclass(attribute, Seeder)
                 and attribute is not Seeder
             ):
-                return attribute(self.db)
+                return attribute(self.db, self.project_root)
 
         raise ImportError(f"No Seeder class found in {path}")

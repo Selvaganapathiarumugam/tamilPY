@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cache manager — tamilPY Docs</title>
+<meta name="description" content="Store temporary values in memory, on disk, or Redis — and clear them from the CLI." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Cache manager</span>
+    </div>
+    <p class="eyebrow">Platform 06 · Study guide</p>
+    <h1>Cache manager</h1>
+    <p class="lead">Store temporary values in memory, on disk, or Redis — and clear them from the CLI.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>How to construct a Cache with a store</li><li>put / get / forget / remember patterns</li><li>When to use memory vs file vs Redis</li></ul></div>
+
+<h2>1. Setup</h2>
+<pre>from tpy.cache import Cache, MemoryStore, FileStore
+
+# Process memory (fast, lost on restart)
+cache = Cache(MemoryStore())
+
+# Shared file cache for local multi-process demos
+cache = Cache(FileStore("storage/framework/cache"))
+
+cache.put("user:1", {"name": "Asha"}, ttl=60)
+user = cache.get("user:1")
+cache.forget("user:1")</pre>
+
+<pre><span class="prompt">$</span> tpy cache clear</pre>
+
+<h2>2. Redis</h2>
+<pre><span class="prompt">$</span> pip install "tamilPY[redis]"</pre>
+<pre>from tpy.cache import Cache, RedisStore
+cache = Cache(RedisStore(url="redis://localhost:6379/0"))</pre>
+
+<h2>3. How it works</h2>
+<ol>
+  <li><code>Cache</code> is a small facade over a <code>CacheStore</code>.</li>
+  <li><code>put</code> writes a value with optional TTL seconds.</li>
+  <li><code>get</code> returns the value or a default if missing/expired.</li>
+  <li>CLI <code>tpy cache clear</code> flushes the configured/default stores used by the project.</li>
+</ol>
+
+<table class="doc-table">
+  <thead><tr><th>Store</th><th>Use when</th></tr></thead>
+  <tbody>
+    <tr><td>Memory</td><td>Single process, tests, tiny TTL data</td></tr>
+    <tr><td>File</td><td>Local persistence without Redis</td></tr>
+    <tr><td>Redis</td><td>Multi-server production cache</td></tr>
+  </tbody>
+</table>
+      <div class="pager">
+        <a href="schedule.html"><span class="label">Previous</span>Task scheduler</a>
+        <a href="api-response.html"><span class="label">Next</span>ApiResponse helpers</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

@@ -40,6 +40,9 @@ def register(app: typer.Typer):
             "tests",
             "storage",
             "storage/logs",
+            "storage/app",
+            "storage/framework",
+            "storage/framework/cache",
         ]
 
         packages = [
@@ -104,6 +107,10 @@ def register(app: typer.Typer):
         FileManager.write(
             root / "app" / "logger.py",
             engine.render("project/app_logger.py", context),
+        )
+        FileManager.write(
+            root / "app" / "schedule.py",
+            engine.render("project/app_schedule.py", context),
         )
         FileManager.write(
             root / "database" / "seeds" / "demo_seed.py",

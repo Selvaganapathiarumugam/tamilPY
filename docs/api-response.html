@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ApiResponse helpers — tamilPY Docs</title>
+<meta name="description" content="Return one consistent JSON envelope from every controller so frontend and mobile clients stay simple." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>ApiResponse helpers</span>
+    </div>
+    <p class="eyebrow">Platform 07 · Study guide</p>
+    <h1>ApiResponse helpers</h1>
+    <p class="lead">Return one consistent JSON envelope from every controller so frontend and mobile clients stay simple.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>What the success/error JSON envelope looks like</li><li>How to return ApiResponse from a FastAPI controller</li><li>How pagination and validation errors map into that envelope</li></ul></div>
+
+<h2>1. Why ApiResponse exists</h2>
+<p>Without a shared helper, every controller invents its own JSON shape (<code>{"ok": true}</code>, <code>{"data": ...}</code>, bare lists, …). Clients then need special cases.</p>
+<p><code>tpy.http.ApiResponse</code> always returns a FastAPI <code>JSONResponse</code> with a fixed envelope:</p>
+
+<table class="doc-table">
+  <thead><tr><th>Field</th><th>Success</th><th>Error</th></tr></thead>
+  <tbody>
+    <tr><td><code>success</code></td><td><code>true</code></td><td><code>false</code></td></tr>
+    <tr><td><code>message</code></td><td>optional text</td><td>error summary</td></tr>
+    <tr><td><code>data</code></td><td>payload</td><td>usually <code>null</code></td></tr>
+    <tr><td><code>meta</code></td><td>pagination / extras</td><td>—</td></tr>
+    <tr><td><code>errors</code></td><td>—</td><td>field map or list</td></tr>
+  </tbody>
+</table>
+
+<h2>2. Setup (no extra install)</h2>
+<p>If tamilPY is installed, import it in any controller:</p>
+<pre>from tpy.http import ApiResponse</pre>
+<p>Generated projects already depend on FastAPI, which <code>ApiResponse</code> uses for <code>JSONResponse</code>.</p>
+
+<div class="callout">Soft-break: older <code>tpy.runtime.response.Response</code> still exists. Prefer <code>ApiResponse</code> for new FastAPI controllers.</div>
+
+<h2>3. How it works (internally)</h2>
+<ol>
+  <li>Helpers call <code>ApiResponse.payload(...)</code> to build a plain <code>dict</code>.</li>
+  <li>That dict is wrapped in FastAPI <code>JSONResponse</code> with an HTTP status code.</li>
+  <li>Your route <code>return</code>s that response — FastAPI sends JSON to the client.</li>
+</ol>
+
+<h2>4. Success responses</h2>
+<pre>from tpy.http import ApiResponse
+
+# 200 OK
+return ApiResponse.success(
+    {"id": "u1", "email": "asha@example.com"},
+    message="User loaded",
+)
+
+# 201 Created
+return ApiResponse.created(
+    {"id": "u1"},
+    message="User created",
+)</pre>
+
+<p>Example JSON body for success:</p>
+<pre>{
+  "success": true,
+  "message": "User loaded",
+  "data": {"id": "u1", "email": "asha@example.com"},
+  "meta": null
+}</pre>
+
+<h2>5. Use inside a controller</h2>
+<pre>from fastapi import APIRouter
+from tpy.http import ApiResponse
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+@router.get("/{user_id}")
+def show_user(user_id: str):
+    user = service.find(user_id)
+    if not user:
+        return ApiResponse.not_found("User not found")
+    return ApiResponse.success(user, message="OK")
+
+@router.post("/")
+def create_user(payload: UserCreate):
+    row = service.create(payload.model_dump())
+    return ApiResponse.created(row)</pre>
+
+<h2>6. Pagination</h2>
+<p><code>paginated()</code> accepts a Query Builder paginator (<code>to_dict()</code>) or a dict with <code>data</code> + <code>meta</code>:</p>
+<pre>page = repo.query().paginate(page=1, per_page=20)
+return ApiResponse.paginated(page, message="Users page")</pre>
+<pre>{
+  "success": true,
+  "message": "Users page",
+  "data": [ /* rows */ ],
+  "meta": {
+    "current_page": 1,
+    "per_page": 20,
+    "total": 105
+    /* …paginator fields */
+  }
+}</pre>
+
+<h2>7. Errors</h2>
+<pre># Generic error (default 400)
+return ApiResponse.error("Email already used", status_code=409)
+
+# Shortcuts
+return ApiResponse.not_found()      # 404
+return ApiResponse.unauthorized()   # 401
+return ApiResponse.forbidden()      # 403
+return ApiResponse.no_content()     # 204 empty body</pre>
+
+<p>Error JSON shape:</p>
+<pre>{
+  "success": false,
+  "message": "Email already used",
+  "data": null,
+  "errors": {}
+}</pre>
+
+<h2>8. Validation errors (422)</h2>
+<p>Pair with the Validation engine:</p>
+<pre>from tpy.validation import validate, ValidationException
+from tpy.http import ApiResponse
+
+try:
+    data = validate(payload, {
+        "email": "required|email",
+        "age": "required|integer|min:18",
+    })
+except ValidationException as exc:
+    return ApiResponse.validation_error(exc)
+
+return ApiResponse.success(data)</pre>
+<p><code>validation_error</code> reads <code>exc.first_messages()</code> when you pass the exception, and returns HTTP 422 with an <code>errors</code> object keyed by field.</p>
+
+<h2>9. Method cheat sheet</h2>
+<table class="doc-table">
+  <thead><tr><th>Method</th><th>Status</th><th>When</th></tr></thead>
+  <tbody>
+    <tr><td><code>success</code></td><td>200</td><td>Normal read/update</td></tr>
+    <tr><td><code>created</code></td><td>201</td><td>Resource created</td></tr>
+    <tr><td><code>paginated</code></td><td>200</td><td>List with meta</td></tr>
+    <tr><td><code>error</code></td><td>400+</td><td>Custom failure</td></tr>
+    <tr><td><code>validation_error</code></td><td>422</td><td>Invalid input</td></tr>
+    <tr><td><code>not_found</code></td><td>404</td><td>Missing resource</td></tr>
+    <tr><td><code>unauthorized</code></td><td>401</td><td>Auth missing/bad</td></tr>
+    <tr><td><code>forbidden</code></td><td>403</td><td>Authenticated but denied</td></tr>
+    <tr><td><code>no_content</code></td><td>204</td><td>Delete with empty body</td></tr>
+    <tr><td><code>payload</code> / <code>json</code></td><td>custom</td><td>Build envelope manually</td></tr>
+  </tbody>
+</table>
+
+<h2>10. Common mistakes</h2>
+<ul>
+  <li>Returning a raw <code>dict</code> from some routes and <code>ApiResponse</code> from others — clients break.</li>
+  <li>Putting error details only in <code>message</code> and leaving <code>errors</code> empty when you have field-level problems.</li>
+  <li>Forgetting that <code>paginated()</code> needs a paginator/<code>data</code>+<code>meta</code> dict — not a bare list.</li>
+</ul>
+      <div class="pager">
+        <a href="cache.html"><span class="label">Previous</span>Cache manager</a>
+        <a href="validation.html"><span class="label">Next</span>Validation engine</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

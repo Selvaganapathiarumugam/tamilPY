@@ -38,8 +38,16 @@ The name is a nod to my mother tongue, Tamil — a small personal tribute from t
 - **Schema-first development** — one `schema.tpy` drives models, migrations, repositories, services, controllers, and routes
 - **Multi-database** — SQLite, PostgreSQL, MySQL, and MongoDB
 - **Full CRUD generation** — FastAPI layers from a single build step
+- **Query Builder & relationships** — fluent queries, schema `relations { }`, eager loading
+- **Events, queues & scheduler** — sync event bus, background jobs, cron-style schedule
+- **Cache, validation & API envelopes** — memory/file/Redis, pipe rules, `ApiResponse`
+- **Kernel platform** — Application providers/plugins, middleware groups, health & lifecycle
+- **Logging, config & storage** — log channels, config cache, file storage, route cache
+- **DX tooling** — `tpy optimize`, richer CLI (`-V`, `about`), `tpy watch`
 - **Admin dashboard** — optional Vite + React UI generated from the same schema
-- **CLI workflow** — project scaffolding, migrations, seeds, and local server in one tool
+- **CLI workflow** — scaffolding, migrations, seeds, queue/schedule/cache, and local server
+
+Full docs: [TamilPY Docs](https://selvaganapathiarumugam.github.io/tamilPY/)
 
 ---
 
@@ -75,6 +83,7 @@ Database drivers are optional extras:
 pip install "tamilPY[postgres]"
 pip install "tamilPY[mysql]"
 pip install "tamilPY[mongodb]"
+pip install "tamilPY[redis]"
 pip install "tamilPY[all]"
 ```
 
@@ -147,9 +156,20 @@ API: `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `GET
 | `tpy migrate` | Create the database (if needed) and apply migrations |
 | `tpy migrate rollback` | Roll back the latest migration |
 | `tpy seed` | Run seed scripts in `database/seeds` |
+| `tpy queue table` | Create `_tpy_jobs` / failed-job tables |
+| `tpy queue work` | Run a queue worker (`--driver database\|sync\|redis`) |
+| `tpy schedule run` | Run due scheduled tasks |
+| `tpy schedule list` | List registered schedule events |
+| `tpy cache clear` | Flush file/memory/redis cache |
+| `tpy config show \| cache \| status \| clear` | Inspect / cache configuration |
+| `tpy route cache \| list \| clear` | Cache and list HTTP routes |
+| `tpy optimize` | Cache config + routes for production |
+| `tpy watch` | Rebuild when `schema.tpy` changes |
+| `tpy about` | Framework + project environment |
+| `tpy commands` | List CLI commands |
 | `tpy serve` | Start the FastAPI development server |
 | `tpy doctor` | Validate project structure |
-| `tpy version` | Print the installed framework version |
+| `tpy version` / `tpy -V` | Print the installed framework version |
 
 ---
 
@@ -195,6 +215,20 @@ Model-level composite unique:
 
 ```tpy
 unique(student_id, course_id)
+```
+
+### Relationships (v0.1.9+)
+
+```tpy
+model Post {
+  id: uuid primary
+  user_id: uuid references User
+  relations {
+    belongs_to User as author via user_id
+    has_many Comment as comments
+    belongs_to_many Tag as tags through PostTag
+  }
+}
 ```
 
 Named / inline enums:
@@ -253,7 +287,21 @@ Re-running `tpy admin` refreshes generated files to match the current schema.
 
 ## Documentation
 
-Full client guide: [TamilPY Docs](https://selvaganapathiarumugam.github.io/tamilPY/)
+Full client & platform guide (GitHub Pages):
+
+**[TamilPY Docs](https://selvaganapathiarumugam.github.io/tamilPY/)**
+
+In-page sections: [Install](https://selvaganapathiarumugam.github.io/tamilPY/#install) · [Features](https://selvaganapathiarumugam.github.io/tamilPY/#features) · [Platform API](https://selvaganapathiarumugam.github.io/tamilPY/#platform) · [CLI](https://selvaganapathiarumugam.github.io/tamilPY/#commands)
+
+Feature cards open **study guides**  with setup, how-it-works, examples, and common mistakes — for example:
+
+- [Schema-first generation](https://selvaganapathiarumugam.github.io/tamilPY/schema.html)
+- [ApiResponse helpers](https://selvaganapathiarumugam.github.io/tamilPY/api-response.html)
+- [Query Builder & relations](https://selvaganapathiarumugam.github.io/tamilPY/query.html)
+- [JWT auth](https://selvaganapathiarumugam.github.io/tamilPY/auth.html)
+- [Optimize · CLI · Watch](https://selvaganapathiarumugam.github.io/tamilPY/cli-watch.html)
+
+Also:
 
 - [Schema grammar (v0.1)](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/docs/schema-grammar.md)
 - [Versioning & deprecation](https://github.com/Selvaganapathiarumugam/tamilPY/blob/Production/docs/versioning.md)

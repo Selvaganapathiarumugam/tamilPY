@@ -42,16 +42,23 @@ class {{ class_name }}Repository:
 
     def all(self) -> list[dict]:
         """Return every row in the table."""
-        return self.db.fetch_all(
-            f"SELECT * FROM {self._table()}"
+        return self.query().get()
+
+    def query(self):
+        """
+        Return a fluent ``QueryBuilder`` bound to this repository table.
+        """
+        from tpy.query import QueryBuilder
+
+        return QueryBuilder(
+            self.db,
+            self.TABLE,
+            columns=self.COLUMNS,
         )
 
     def find(self, record_id) -> dict | None:
         """Return a single row by primary key."""
-        return self.db.fetch_one(
-            f"SELECT * FROM {self._table()} WHERE {self._column('{{ primary_key }}')} = ?",
-            (str(record_id),),
-        )
+        return self.query().find(str(record_id), key="{{ primary_key }}")
 
     def create(self, data: dict) -> dict | None:
         """Insert a row and return the created record."""

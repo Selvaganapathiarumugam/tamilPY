@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Full CRUD REST API — tamilPY Docs</title>
+<meta name="description" content="See the exact endpoints tamilPY generates and how to call them from Swagger or HTTP clients." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Full CRUD REST API</span>
+    </div>
+    <p class="eyebrow">Feature 04 · Study guide</p>
+    <h1>Full CRUD REST API</h1>
+    <p class="lead">See the exact endpoints tamilPY generates and how to call them from Swagger or HTTP clients.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>Default REST routes for each model</li><li>How to try them in /docs</li><li>Where to customize responses</li></ul></div>
+
+<h2>1. Setup</h2>
+<pre><span class="prompt">$</span> tpy build &amp;&amp; tpy migrate
+<span class="prompt">$</span> tpy serve
+<span class="prompt">#</span> open http://127.0.0.1:8000/docs</pre>
+
+<h2>2. How routes are named</h2>
+<p>Model <code>User</code> becomes plural prefix <code>/users</code>:</p>
+<table class="doc-table">
+  <thead><tr><th>Method</th><th>Path</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET</code></td><td><code>/users/</code></td><td>List records</td></tr>
+    <tr><td><code>GET</code></td><td><code>/users/{id}</code></td><td>Fetch one</td></tr>
+    <tr><td><code>POST</code></td><td><code>/users/</code></td><td>Create</td></tr>
+    <tr><td><code>PUT</code></td><td><code>/users/{id}</code></td><td>Update</td></tr>
+    <tr><td><code>DELETE</code></td><td><code>/users/{id}</code></td><td>Delete</td></tr>
+  </tbody>
+</table>
+
+<h2>3. Request flow</h2>
+<ol>
+  <li>HTTP hits the generated FastAPI route.</li>
+  <li>Controller validates/parses the body (Pydantic schema).</li>
+  <li>Service runs the use-case.</li>
+  <li>Repository talks to the database.</li>
+  <li>JSON returns to the client.</li>
+</ol>
+
+<h2>4. Example create</h2>
+<pre>POST /users/
+Content-Type: application/json
+
+{
+  "name": "Asha",
+  "email": "asha@example.com"
+}</pre>
+
+<p>Prefer wrapping controller returns with <a href="api-response.html" style="color:var(--amber);">ApiResponse</a> when you customize handlers so every client sees the same envelope.</p>
+
+<h2>5. Common mistakes</h2>
+<ul>
+  <li>Calling <code>/user</code> instead of <code>/users</code> (pluralization).</li>
+  <li>Forgetting required fields from the schema (<code>required</code> / non-nullable).</li>
+</ul>
+      <div class="pager">
+        <a href="migrate.html"><span class="label">Previous</span>Auto database create</a>
+        <a href="layers.html"><span class="label">Next</span>Layered architecture</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

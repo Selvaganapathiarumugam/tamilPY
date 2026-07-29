@@ -1,8 +1,14 @@
+"""
+Legacy fluent validation helpers.
+
+Prefer ``tpy.validation.Validator.make`` for rule-string validation.
+"""
+
 from typing import Any, Callable
 
 
 class ValidationError(Exception):
-    """Raised when request validation fails."""
+    """Raised when request validation fails (legacy dict[str, str] errors)."""
 
     def __init__(self, errors: dict[str, str]) -> None:
         self.errors = errors
@@ -11,7 +17,9 @@ class ValidationError(Exception):
 
 class Validator:
     """
-    Minimal field validator used by runtime helpers.
+    Minimal fluent field validator (legacy runtime helper).
+
+    Prefer ``tpy.validation.Validator.make`` for pipe-rule validation.
     """
 
     def __init__(self, data: dict[str, Any]) -> None:
@@ -29,7 +37,7 @@ class Validator:
     def email(self, field: str) -> "Validator":
         """Validate a simple email format."""
         value = self.data.get(field)
-        if value is not None and "@" not in str(value):
+        if value is not None and value != "" and "@" not in str(value):
             self.errors[field] = "Invalid email address."
         return self
 
@@ -50,14 +58,9 @@ def validate(
     rules: Callable[[Validator], Validator],
 ) -> dict[str, Any]:
     """
-    Run validation rules against a data dict.
+    Run legacy fluent validation rules against a data dict.
 
-    Args:
-        data: Input payload.
-        rules: Callable that configures a ``Validator``.
-
-    Returns:
-        Validated data.
+    For pipe-rule validation use ``tpy.validation.validate``.
     """
     validator = Validator(data)
     rules(validator)

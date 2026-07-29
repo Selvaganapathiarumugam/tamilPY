@@ -18,6 +18,9 @@ class LogLevel(IntEnum):
 class Logger:
     """
     Simple file + console logger for TPY client applications.
+
+    Prefer ``tpy.logging.get_logger`` / ``LogManager`` for new code
+    (stdlib channels + context).
     """
 
     def __init__(

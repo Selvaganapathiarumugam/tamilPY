@@ -4,6 +4,70 @@ All notable changes to **TamilPY Framework** are documented in this file.
 
 ---
 
+## [0.1.9] - 2026-07-29
+
+Schema-driven FastAPI platform release: Query Builder through watch mode (Features 1–20), richer CLI, and a professional GitHub Pages study-guide docs site.
+
+**Docs:** [TamilPY Docs](https://selvaganapathiarumugam.github.io/tamilPY/) · [Platform guides](https://selvaganapathiarumugam.github.io/tamilPY/#platform)
+
+### Added — runtime platform
+
+- **Query Builder** (`tpy.query`): fluent, parameterized queries on `BaseProvider`; SQLite / Postgres / MySQL grammars; Mongo helpers; pagination.
+- **ORM relationships**: `relations { }` in `schema.tpy` (`belongs_to`, `has_many`, `has_one`, `belongs_to_many`); eager load via `with_()` / `EagerLoader`.
+- **Events** (`tpy.events`): sync `Event` / `Listener` / `EventDispatcher` (stop propagation, wildcards, process singleton).
+- **Queue** (`tpy.queue`): `Job`, `Worker`; drivers `sync`, `database` (`_tpy_jobs`), `redis` (optional). CLI: `tpy queue table`, `tpy queue work`.
+- **Scheduler** (`tpy.schedule`): cadence helpers, `app/schedule.py` `register()`, overlap locks. CLI: `tpy schedule run`, `tpy schedule list`.
+- **Cache** (`tpy.cache`): `MemoryStore`, `FileStore`, `RedisStore`. CLI: `tpy cache clear`.
+- **API responses** (`tpy.http.ApiResponse`): uniform JSON envelopes (`success`, `created`, `paginated`, `error`, `validation_error`, `not_found`, …).
+- **Validation** (`tpy.validation`): pipe-rule `validate()` / `Validator` with `ValidationException`.
+- **Application kernel** (`tpy.kernel`): dual-mode `Application` (`create()` / `mount()`), `Container`, `ServiceProvider`, plugins.
+- **Middleware groups** (`tpy.http.MiddlewareManager`).
+- **Health & lifecycle** (`tpy.http`): `/health`, `/health/ready`, boot/shutdown/before/after/exception hooks.
+- **Logging** (`tpy.logging`): channels (`console`, `file`, `stack`) via `LogManager` / `get_logger`.
+- **Configuration** (`tpy.config.Config`): nested keys, env overlay, `cache` / `load_cached` / `load_auto`, freshness checks, `TPY_CONFIG_CACHE`.
+- **Route cache** (`tpy.http.RouteCache`): `tpy route cache | list | clear`.
+- **CLI DX**: `tpy -V` / `--version`, `tpy about`, `tpy commands`, Rich banners (`Console.banner` / `table` / `rule`).
+- **Optimize & watch**: `tpy optimize` (config + route cache), `tpy watch` (rebuild on `schema.tpy` change).
+- Optional extra: `tamilPY[redis]` (also included in `tamilPY[all]`).
+
+### Added — documentation
+
+- GitHub Pages client **study guides** : clickable feature cards → detail pages (`schema.html`, `api-response.html`, …).
+- Shared responsive stylesheet (`docs/docs.css`): mobile hamburger nav, stacked footer link chips, touch-friendly targets.
+- Schema grammar notes for `relations { }` (`docs/schema-grammar.md`).
+
+### Changed
+
+- Generated SQL repositories expose `query()`; `all()` / `find()` use the Query Builder (existing CRUD methods retained).
+- `tpy new` scaffolds `app/schedule.py` and `storage/framework/cache/`.
+- Kernel / Application load config via `Config.load_auto()`.
+- Soft-break: `tpy.runtime.response.Response` and legacy validation helpers kept; prefer `ApiResponse` and `tpy.validation` for new code.
+
+### CLI (new in 0.1.9)
+
+```bash
+tpy queue table | work
+tpy schedule run | list
+tpy cache clear
+tpy config show | cache | status | clear
+tpy route cache | list | clear
+tpy optimize [--skip-routes]
+tpy watch [--with-db] [--interval 1]
+tpy about | commands | -V
+```
+
+### Upgrade
+
+```bash
+pip install --upgrade "tamilPY[all]"
+# Redis drivers only:
+pip install --upgrade "tamilPY[redis]"
+```
+
+After upgrading an existing app, regenerate repositories with `tpy build` / `tpy crud` to pick up `query()`. Add optional `relations { }` blocks in `schema.tpy` when ready. For faster production boots: `tpy optimize` then set `TPY_CONFIG_CACHE=1`.
+
+---
+
 ## [0.1.8] - 2026-07-28
 
 Security hardening, packaging cleanup, CI foundation, schema DSL expansions, and developer docs toward 1.0.
@@ -20,7 +84,7 @@ Security hardening, packaging cleanup, CI foundation, schema DSL expansions, and
 - PyPI Trusted Publishing (OIDC) for releases.
 
 ### Developer experience
-- Exception hierarchy (`TpyError` / `TpyParseError` / …).
+- Exception hierarchy (`TpyError` / `TpyParseError` / â€¦).
 - Lazy imports for faster CLI startup.
 - Providers usable as context managers.
 - CI (pytest, Ruff, MyPy) on Python 3.12/3.13.
@@ -130,9 +194,9 @@ Dev server available at `http://127.0.0.1:5173/`.
 - Backward compatible with previous schema definitions; no breaking changes.
 ---
 
-## [0.1.4] - 2026-07-24 — Initial Public Release 🎉
+## [0.1.4] - 2026-07-24 â€” Initial Public Release ðŸŽ‰
 
-First public release of **tamilPY** — a Python framework and CLI that accelerates backend API development through schema-driven code generation.
+First public release of **tamilPY** â€” a Python framework and CLI that accelerates backend API development through schema-driven code generation.
 
 ### Added
 - Schema-driven application generation from a single `schema.tpy` file.
@@ -151,7 +215,7 @@ First public release of **tamilPY** — a Python framework and CLI that accelera
 pip install tamilPY
 ```
 ---
-## [0.1.0 – 0.1.3] - Initial Setup (Pre-release)
+## [0.1.0 â€“ 0.1.3] - Initial Setup (Pre-release)
 
 - Initial project scaffolding and internal setup phase.
 - Core groundwork for schema-driven code generation laid out.

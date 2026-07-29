@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Layered architecture — tamilPY Docs</title>
+<meta name="description" content="Learn the Repository → Service → Controller → Route stack so you know where to put new code." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Layered architecture</span>
+    </div>
+    <p class="eyebrow">Feature 05 · Study guide</p>
+    <h1>Layered architecture</h1>
+    <p class="lead">Learn the Repository → Service → Controller → Route stack so you know where to put new code.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>What each layer owns</li><li>Where to add custom business rules</li><li>How regeneration interacts with your edits</li></ul></div>
+
+<h2>1. The stack</h2>
+<div class="flow">
+  <div class="flow-item"><div class="flow-step"><span class="n">01</span>REPO</div><div><h3>Repository</h3><p>Only database concerns: SQL/Mongo, <code>query()</code>, CRUD helpers. No HTTP.</p></div></div>
+  <div class="flow-item"><div class="flow-step"><span class="n">02</span>SERVICE</div><div><h3>Service</h3><p>Use-cases: validation orchestration, events, multi-repo workflows.</p></div></div>
+  <div class="flow-item"><div class="flow-step"><span class="n">03</span>CTRL</div><div><h3>Controller</h3><p>Translate HTTP ↔ service. Return <code>ApiResponse</code>.</p></div></div>
+  <div class="flow-item"><div class="flow-step"><span class="n">04</span>ROUTE</div><div><h3>Route</h3><p>Register paths on FastAPI; keep handlers thin.</p></div></div>
+</div>
+
+<h2>2. Setup / finding files</h2>
+<p>After generate, look under:</p>
+<pre>app/repositories/
+app/services/
+app/controllers/
+app/routes/</pre>
+
+<h2>3. Where should my code go?</h2>
+<table class="doc-table">
+  <thead><tr><th>Change</th><th>Put it in</th></tr></thead>
+  <tbody>
+    <tr><td>New SQL filter / join</td><td>Repository / Query Builder</td></tr>
+    <tr><td>“When order placed, send email”</td><td>Service + Events/Queue</td></tr>
+    <tr><td>Status code / JSON envelope</td><td>Controller + ApiResponse</td></tr>
+    <tr><td>URL path / method</td><td>Route</td></tr>
+  </tbody>
+</table>
+
+<h2>4. Regeneration tip</h2>
+<p><code>tpy crud</code> may overwrite generated files. Keep a plan: either re-apply patches, protect customized modules, or extend via services that you own.</p>
+      <div class="pager">
+        <a href="crud-api.html"><span class="label">Previous</span>Full CRUD REST API</a>
+        <a href="workflow.html"><span class="label">Next</span>Migrate · seed · serve</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

@@ -43,9 +43,18 @@ def register(app: typer.Typer) -> None:
         bind_host = host or settings.host
         bind_port = port or settings.port
 
-        Console.info(
-            f"Serving {settings.name} on http://{bind_host}:{bind_port}"
-        )
+        try:
+            from importlib.metadata import version as pkg_version
+
+            Console.banner(pkg_version("tamilPY"))
+        except Exception:
+            from tpy import __version__
+
+            Console.banner(__version__)
+        Console.rule(settings.name)
+        Console.info(f"Serving on http://{bind_host}:{bind_port}")
+        if reload:
+            Console.info("Auto-reload enabled")
 
         uvicorn.run(
             "app.main:app",

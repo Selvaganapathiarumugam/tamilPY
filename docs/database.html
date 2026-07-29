@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Multi-database — tamilPY Docs</title>
+<meta name="description" content="Choose SQLite, PostgreSQL, MySQL, or MongoDB — and learn how tamilPY stores and uses that choice." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Multi-database</span>
+    </div>
+    <p class="eyebrow">Feature 02 · Study guide</p>
+    <h1>Multi-database</h1>
+    <p class="lead">Choose SQLite, PostgreSQL, MySQL, or MongoDB — and learn how tamilPY stores and uses that choice.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>Which databases tamilPY supports</li><li>How the build wizard writes .env and schema</li><li>How to switch providers later with tpy db configure</li></ul></div>
+
+<h2>1. Supported providers</h2>
+<table class="doc-table">
+  <thead><tr><th>Provider</th><th>Best for</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>sqlite</code></td><td>Learning / local demos</td><td>No server; file-based</td></tr>
+    <tr><td><code>postgres</code></td><td>Production SQL</td><td>Full FK / indexes</td></tr>
+    <tr><td><code>mysql</code></td><td>Production SQL</td><td>Same CRUD path</td></tr>
+    <tr><td><code>mongodb</code></td><td>Documents</td><td>Collections + indexes; refs are metadata</td></tr>
+  </tbody>
+</table>
+
+<h2>2. Setup during build</h2>
+<pre><span class="prompt">$</span> tpy build</pre>
+<p>The wizard asks for provider, host, port, user, and password. It writes:</p>
+<ul>
+  <li><code>.env</code> — connection URL / credentials</li>
+  <li><code>tpy.toml</code> — app settings</li>
+  <li><code>schema.tpy</code> — optional <code>database …</code> line</li>
+</ul>
+
+<pre><span class="prompt">$</span> pip install "tamilPY[all]"   <span style="color:var(--muted)"># SQL + Mongo drivers</span>
+<span class="prompt">$</span> pip install "tamilPY[redis]" <span style="color:var(--muted)"># Redis cache/queue</span></pre>
+
+<h2>3. Reconfigure later</h2>
+<pre><span class="prompt">$</span> tpy db configure
+<span class="prompt">$</span> tpy db info
+<span class="prompt">$</span> tpy db ping</pre>
+<p><code>info</code> prints the active provider and URL shape. <code>ping</code> opens a real connection so you know credentials work before migrate.</p>
+
+<h2>4. How the runtime uses it</h2>
+<p>Providers are selected from config. Generated repositories call the active provider for SQL/Mongo operations. You usually do not import drivers yourself inside controllers.</p>
+
+<h2>5. Common mistakes</h2>
+<ul>
+  <li>Installing the framework without DB extras, then wondering why Postgres fails to import.</li>
+  <li>Changing only <code>schema.tpy</code> database line without updating <code>.env</code>.</li>
+</ul>
+      <div class="pager">
+        <a href="schema.html"><span class="label">Previous</span>Schema-first generation</a>
+        <a href="migrate.html"><span class="label">Next</span>Auto database create</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

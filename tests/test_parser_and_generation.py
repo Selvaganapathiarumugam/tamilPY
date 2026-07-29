@@ -100,6 +100,9 @@ def test_repository_generator_uses_schema_allowlist_before_sql(tmp_path):
     assert "for key, value in data.items()" in repository
     assert "tuple(payload.values())" in repository
     assert "(*payload.values(), str(record_id))" in repository
+    assert "def query(self):" in repository
+    assert "QueryBuilder" in repository
+    assert "return self.query().get()" in repository
 
 
 def test_repository_generator_creates_mongo_repository_for_mongodb(tmp_path):

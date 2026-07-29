@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Schema-first generation — tamilPY Docs</title>
+<meta name="description" content="Learn how one schema.tpy file becomes a full FastAPI stack — and how to run that workflow yourself." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#features">Guides</a>
+      <span class="sep">/</span>
+      <span>Schema-first generation</span>
+    </div>
+    <p class="eyebrow">Feature 01 · Study guide</p>
+    <h1>Schema-first generation</h1>
+    <p class="lead">Learn how one schema.tpy file becomes a full FastAPI stack — and how to run that workflow yourself.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#features">← All guides</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>What schema-first means in tamilPY</li><li>How to write schema.tpy and regenerate safely</li><li>Which files are created and what each layer does</li></ul></div>
+
+<h2>1. Why schema-first?</h2>
+<p>In a normal FastAPI project you write models, Pydantic schemas, SQL, repositories, services, controllers, and routes by hand — for every entity. tamilPY flips that: you describe the domain once in <code>schema.tpy</code>, then generators produce a consistent layered app.</p>
+<p>That gives clients a predictable project shape, faster MVPs, and fewer copy-paste bugs.</p>
+
+<h2>2. Setup (first time)</h2>
+<ol>
+  <li>Install: <code>pip install tamilPY</code> (Python 3.12+).</li>
+  <li>Scaffold: <code>tpy new myapp</code> then <code>cd myapp</code>.</li>
+  <li>Open <code>schema.tpy</code> and define your models.</li>
+  <li>Run <code>tpy build</code> (DB wizard + generate) or <code>tpy build --skip-db</code> if <code>.env</code> already exists.</li>
+  <li>Apply DB: <code>tpy migrate</code>, optionally <code>tpy seed</code>.</li>
+  <li>Serve: <code>tpy serve</code> and open <code>/docs</code>.</li>
+</ol>
+
+<pre><span class="prompt">$</span> pip install tamilPY
+<span class="prompt">$</span> tpy new myapp &amp;&amp; cd myapp
+<span class="prompt">$</span> # edit schema.tpy
+<span class="prompt">$</span> tpy build
+<span class="prompt">$</span> tpy migrate &amp;&amp; tpy seed
+<span class="prompt">$</span> tpy serve</pre>
+
+<h2>3. How generation works</h2>
+<p>When you run <code>tpy build</code> / <code>tpy crud</code>:</p>
+<ol>
+  <li>The parser reads <code>schema.tpy</code> into an AST (models, fields, relations).</li>
+  <li>Generators fill Jinja templates with that context.</li>
+  <li>Files are written under <code>app/</code> and <code>database/migrations/</code>.</li>
+  <li>Routers are wired so FastAPI exposes REST endpoints.</li>
+</ol>
+
+<div class="callout">You edit the <strong style="color:var(--ink);">schema</strong> as the source of truth. Regenerating refreshes generated layers from that schema.</div>
+
+<h2>4. Write a real schema</h2>
+<pre>database sqlite
+
+model User {
+  id: uuid primary
+  name: string required
+  email: string unique required
+  age: int nullable
+}
+
+model Post {
+  id: uuid primary
+  title: string required index
+  body: string nullable
+  user_id: uuid references User on_delete cascade
+  published: bool default false
+  relations {
+    belongs_to User as author via user_id
+  }
+}</pre>
+
+<h2>5. What gets generated</h2>
+<table class="doc-table">
+  <thead><tr><th>Layer</th><th>Path</th><th>Responsibility</th></tr></thead>
+  <tbody>
+    <tr><td>Model</td><td><code>app/models/</code></td><td>Field shape</td></tr>
+    <tr><td>Migration</td><td><code>database/migrations/</code></td><td>Create/alter tables</td></tr>
+    <tr><td>Schema</td><td><code>app/schemas/</code></td><td>Create / Update / Response DTOs</td></tr>
+    <tr><td>Repository</td><td><code>app/repositories/</code></td><td>DB access + <code>query()</code></td></tr>
+    <tr><td>Service</td><td><code>app/services/</code></td><td>Business use-cases</td></tr>
+    <tr><td>Controller</td><td><code>app/controllers/</code></td><td>HTTP → service</td></tr>
+    <tr><td>Route</td><td><code>app/routes/</code></td><td>FastAPI router</td></tr>
+  </tbody>
+</table>
+
+<h2>6. After you change the schema</h2>
+<ol>
+  <li>Save <code>schema.tpy</code>.</li>
+  <li>Run <code>tpy crud</code> (or <code>tpy watch</code> in another terminal).</li>
+  <li>Run <code>tpy migrate</code> if tables/columns changed.</li>
+  <li>Restart or rely on <code>tpy serve --reload</code>.</li>
+</ol>
+
+<h2>7. Common mistakes</h2>
+<ul>
+  <li>Editing only generated files and expecting them to survive the next <code>tpy crud</code> — put durable logic in services carefully.</li>
+  <li>Referencing a model that is defined later — put parents first so migrations order correctly.</li>
+  <li>Forgetting <code>tpy migrate</code> after adding fields.</li>
+</ul>
+      <div class="pager">
+        <span></span>
+        <a href="database.html"><span class="label">Next</span>Multi-database</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="schema.html">Schema</a>
+      <a href="api-response.html">ApiResponse</a>
+      <a href="https://pypi.org/project/tamilPY/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/Selvaganapathiarumugam/tamilPY" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>
