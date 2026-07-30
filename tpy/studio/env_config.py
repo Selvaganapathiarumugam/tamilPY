@@ -113,7 +113,8 @@ def build_database_url(payload: dict[str, Any]) -> tuple[str, str]:
     """
     provider = str(payload.get("provider") or "sqlite").lower()
     if provider == "sqlite":
-        path = str(payload.get("database_url") or payload.get("path") or "database/database.sqlite3")
+        default_db = "database/database.sqlite3"
+        path = str(payload.get("database_url") or payload.get("path") or default_db)
         if path.startswith("sqlite:///"):
             return provider, path
         return provider, f"sqlite:///{path}"
