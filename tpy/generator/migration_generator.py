@@ -1,10 +1,10 @@
 from pathlib import Path
 
+from tpy.exceptions import GeneratedFileConflict
 from tpy.parser.ast import FieldNode, ModelNode, ProgramNode
 from tpy.runtime.template_engine import TemplateEngine
 from tpy.utils.file_manager import FileManager
 from tpy.utils.generated import is_pristine, write_generated
-from tpy.exceptions import GeneratedFileConflict
 
 
 class MigrationGenerator:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import difflib
-import json
 from pathlib import Path
 from typing import Any
 
@@ -229,7 +228,9 @@ def create_api_router(project_root: Path) -> APIRouter:
         )
 
     @router.post("/seed")
-    async def post_seed(body: SeedBody = SeedBody()) -> StreamingResponse:
+    async def post_seed(body: SeedBody | None = None) -> StreamingResponse:
+        # Avoid calling SeedBody() at import time (flake8-bugbear B008)
+        body = body or SeedBody()
         args = ["seed"]
         # fake flags reserved for Part 3.2 — ignored safely for now
         _ = body
