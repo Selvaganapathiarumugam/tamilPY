@@ -29,13 +29,13 @@ class CrudGenerator:
         self.project_root = Path(project_root)
         self.template = TemplateEngine()
         self.generators = [
-            ModelGenerator(self.project_root),
-            MigrationGenerator(self.project_root),
-            SchemaGenerator(self.project_root),
-            RepositoryGenerator(self.project_root),
-            ServiceGenerator(self.project_root),
-            ControllerGenerator(self.project_root),
-            RouteGenerator(self.project_root),
+            ModelGenerator(self.project_root, force=True),
+            MigrationGenerator(self.project_root, force=True),
+            SchemaGenerator(self.project_root, force=True),
+            RepositoryGenerator(self.project_root, force=True),
+            ServiceGenerator(self.project_root, force=True),
+            ControllerGenerator(self.project_root, force=True),
+            RouteGenerator(self.project_root, force=True),
         ]
 
     def generate(self, ast: ProgramNode) -> None:
@@ -51,7 +51,7 @@ class CrudGenerator:
             generator.generate(ast)
 
     def ensure_project_helpers(self) -> None:
-        """Create app entrypoint, provider, logger, and seed scaffolding when missing."""
+        """Create app entrypoint, provider, logger, and seeds when missing."""
         project_name = self._project_name()
 
         self._ensure_file(

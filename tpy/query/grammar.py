@@ -4,7 +4,6 @@ SQL dialect grammars that compile ``QueryBuilder`` state to SQL.
 
 from __future__ import annotations
 
-from abc import ABC
 from typing import TYPE_CHECKING, Any
 
 from tpy.query.exceptions import GrammarError, InvalidOperatorError
@@ -30,7 +29,7 @@ _OPERATORS = {
 }
 
 
-class Grammar(ABC):
+class Grammar:
     """Compile a QueryBuilder into dialect-specific SQL."""
 
     def __init__(self, connection: Any) -> None:

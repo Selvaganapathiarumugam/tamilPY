@@ -12,7 +12,11 @@ from tpy.kernel.exceptions import (
 )
 from tpy.kernel.plugin import Plugin, discover_plugins
 from tpy.kernel.provider import ServiceProvider
-from tpy.kernel.providers import EventsServiceProvider, FrameworkServiceProvider, HttpServiceProvider
+from tpy.kernel.providers import (
+    EventsServiceProvider,
+    FrameworkServiceProvider,
+    HttpServiceProvider,
+)
 
 __all__ = [
     "Application",

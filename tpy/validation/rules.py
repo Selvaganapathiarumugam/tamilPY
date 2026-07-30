@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 from uuid import UUID
 
 
@@ -112,8 +113,8 @@ class Numeric(Rule):
 
 class BooleanRule(Rule):
     name = "boolean"
-    _truthy = {True, 1, "1", "true", "True", "yes", "on"}
-    _falsy = {False, 0, "0", "false", "False", "no", "off"}
+    _truthy = {True, "1", "true", "True", "yes", "on"}
+    _falsy = {False, "0", "false", "False", "no", "off"}
 
     def passes(self, attribute: str, value: Any, data: dict[str, Any]) -> bool:
         if value is None or value == "":
@@ -144,7 +145,8 @@ class Min(Rule):
 
     def message(self, attribute: str, value: Any) -> str:
         if isinstance(value, str):
-            return f"The {attribute} field must be at least {int(self.limit)} characters."
+            limit = int(self.limit)
+            return f"The {attribute} field must be at least {limit} characters."
         return f"The {attribute} field must be at least {self.limit}."
 
 
@@ -168,7 +170,10 @@ class Max(Rule):
 
     def message(self, attribute: str, value: Any) -> str:
         if isinstance(value, str):
-            return f"The {attribute} field must not be greater than {int(self.limit)} characters."
+            limit = int(self.limit)
+            return (
+                f"The {attribute} field must not be greater than {limit} characters."
+            )
         return f"The {attribute} field must not be greater than {self.limit}."
 
 

@@ -1,0 +1,73 @@
+database sqlite
+
+model Teacher {
+  id: uuid primary
+  name: string required
+  subject: string nullable
+  relations {
+    has_many Course as courses
+  }
+}
+
+model Course {
+  id: uuid primary
+  title: string required
+  teacher_id: uuid references Teacher
+  relations {
+    belongs_to Teacher as teacher via teacher_id
+    has_many Batch as batches
+    has_many Exam as exams
+  }
+}
+
+model Batch {
+  id: uuid primary
+  name: string required
+  course_id: uuid references Course
+  relations {
+    belongs_to Course as course via course_id
+    has_many Student as students
+  }
+}
+
+model Student {
+  id: uuid primary
+  name: string required
+  email: string unique required
+  batch_id: uuid references Batch
+  relations {
+    belongs_to Batch as batch via batch_id
+    has_many Attendance as attendance
+    has_many FeePayment as payments
+  }
+}
+
+model Attendance {
+  id: uuid primary
+  student_id: uuid references Student
+  date: datetime
+  present: bool default true
+  relations {
+    belongs_to Student as student via student_id
+  }
+}
+
+model FeePayment {
+  id: uuid primary
+  student_id: uuid references Student
+  amount: float required
+  paid_at: datetime
+  relations {
+    belongs_to Student as student via student_id
+  }
+}
+
+model Exam {
+  id: uuid primary
+  course_id: uuid references Course
+  title: string required
+  max_marks: int default 100
+  relations {
+    belongs_to Course as course via course_id
+  }
+}

@@ -3,6 +3,7 @@ from pathlib import Path
 from tpy.generator.crud_generator import CrudGenerator
 from tpy.parser.lexer import Lexer
 from tpy.parser.parser import Parser
+from tpy.schema.validator import validate_program
 
 
 class Builder:
@@ -34,6 +35,7 @@ class Builder:
 
         Raises:
             FileNotFoundError: When ``schema.tpy`` is missing.
+            SchemaValidationError: When semantic validation fails.
         """
         ast = self.parse_schema()
 
@@ -46,6 +48,7 @@ class Builder:
 
         Raises:
             FileNotFoundError: When ``schema.tpy`` is missing.
+            SchemaValidationError: When semantic validation fails.
         """
         if not self.schema_path.exists():
             raise FileNotFoundError(
@@ -55,7 +58,13 @@ class Builder:
         lexer = Lexer.from_file(self.schema_path)
         tokens = lexer.tokenize()
         parser = Parser(tokens)
-        return parser.parse()
+        program = parser.parse()
+        validate_program(
+            program,
+            filename=str(self.schema_path.name),
+            raise_on_error=True,
+        )
+        return program
 
     def run_generators(self, ast) -> None:
         """Execute every registered generator."""

@@ -1,0 +1,29 @@
+{
+  "templates": [
+    {
+      "name": "crm",
+      "description": "CRM: companies, contacts, deals, and activities",
+      "models": ["Company", "Contact", "Deal", "Activity"]
+    },
+    {
+      "name": "institute-admin",
+      "description": "School/institute: students, courses, fees, exams",
+      "models": ["Teacher", "Course", "Batch", "Student", "Attendance", "FeePayment", "Exam"]
+    },
+    {
+      "name": "inventory",
+      "description": "Inventory: products, warehouses, stock, suppliers, POs",
+      "models": ["Supplier", "Warehouse", "Product", "PurchaseOrder", "StockMovement"]
+    },
+    {
+      "name": "helpdesk",
+      "description": "Helpdesk: tickets, agents, SLAs, categories, comments",
+      "models": ["Category", "Agent", "SLA", "Ticket", "Comment"]
+    },
+    {
+      "name": "blog-cms",
+      "description": "Blog CMS: authors, posts, tags, categories, comments",
+      "models": ["Author", "Category", "Tag", "Post", "Comment"]
+    }
+  ]
+}

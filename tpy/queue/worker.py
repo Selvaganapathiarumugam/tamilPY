@@ -5,7 +5,7 @@ Queue worker loop.
 from __future__ import annotations
 
 import time
-from typing import Callable
+from collections.abc import Callable
 
 from tpy.queue.drivers.base import QueueDriver, ReservedJob
 from tpy.queue.queue import Queue

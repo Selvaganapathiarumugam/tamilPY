@@ -2,11 +2,11 @@ from pathlib import Path
 
 import typer
 
-from tpy.runtime.builder import Builder
+from tpy.commands.admin import prompt_api_base_url
 from tpy.generator.admin_generator import AdminGenerator
+from tpy.runtime.builder import Builder
 from tpy.utils.console import Console
 from tpy.utils.db_wizard import DatabaseWizard
-from tpy.commands.admin import prompt_api_base_url
 
 
 def register(app: typer.Typer) -> None:
@@ -56,7 +56,8 @@ def register(app: typer.Typer) -> None:
                 base_url = prompt_api_base_url(api_base_url)
                 if (root / "admin").exists():
                     Console.warning(
-                        "admin/ already exists; generated admin files will be overwritten."
+                        "admin/ already exists; generated admin files "
+                        "will be overwritten."
                     )
                 AdminGenerator(root).generate(ast, base_url)
 
@@ -66,13 +67,14 @@ def register(app: typer.Typer) -> None:
             )
             if with_ui:
                 Console.info(
-                    "Next: tpy migrate && tpy seed && tpy serve, then cd admin && npm install && npm run dev"
+                    "Next: tpy migrate && tpy seed && tpy serve, then "
+                    "cd admin && npm install && npm run dev"
                 )
             else:
                 Console.info("Next: tpy migrate && tpy seed && tpy serve")
         except FileNotFoundError as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error
         except Exception as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error

@@ -4,7 +4,8 @@ Fluent Query Builder executed through tamilPY database providers.
 
 from __future__ import annotations
 
-from typing import Any, Iterable, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from tpy.query.clause import JoinClause, OrderClause, WhereClause
 from tpy.query.exceptions import (

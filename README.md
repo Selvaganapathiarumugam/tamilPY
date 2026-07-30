@@ -24,6 +24,8 @@ The name is a nod to my mother tongue, Tamil — a small personal tribute from t
 - [How it compares](#how-it-compares)
 - [Installation](#installation)
 - [Quick start](#quick-start)
+- [Studio](#studio)
+- [Starter templates](#starter-templates)
 - [CLI reference](#cli-reference)
 - [Schema language](#schema-language)
 - [Admin dashboard](#admin-dashboard)
@@ -36,6 +38,9 @@ The name is a nod to my mother tongue, Tamil — a small personal tribute from t
 ## Features
 
 - **Schema-first development** — one `schema.tpy` drives models, migrations, repositories, services, controllers, and routes
+- **Studio** — visual local builder (`tpy studio`) for schema, database, auth, and build/migrate/seed
+- **Starter templates** — `crm`, `institute-admin`, `inventory`, `helpdesk`, `blog-cms` via `tpy new --template`
+- **Incremental make** — `tpy make:model` / `make:controller` / `make:service` without a full rebuild
 - **Multi-database** — SQLite, PostgreSQL, MySQL, and MongoDB
 - **Full CRUD generation** — FastAPI layers from a single build step
 - **Query Builder & relationships** — fluent queries, schema `relations { }`, eager loading
@@ -43,8 +48,8 @@ The name is a nod to my mother tongue, Tamil — a small personal tribute from t
 - **Cache, validation & API envelopes** — memory/file/Redis, pipe rules, `ApiResponse`
 - **Kernel platform** — Application providers/plugins, middleware groups, health & lifecycle
 - **Logging, config & storage** — log channels, config cache, file storage, route cache
-- **DX tooling** — `tpy optimize`, richer CLI (`-V`, `about`), `tpy watch`
-- **Admin dashboard** — optional Vite + React UI generated from the same schema
+- **DX tooling** — schema validator with line numbers, generated-file markers, `tpy optimize`, `tpy watch`
+- **Admin dashboard** — optional Vite + React UI with per-template themes
 - **CLI workflow** — scaffolding, migrations, seeds, queue/schedule/cache, and local server
 
 Full docs: [TamilPY Docs](https://selvaganapathiarumugam.github.io/tamilPY/)
@@ -101,12 +106,14 @@ python -m tpy.cli version
 
 ```bash
 tpy new myapp
+# or: tpy new myapp --template crm
 cd myapp
 ```
 
-Edit `schema.tpy`, then:
+Edit `schema.tpy` (or use Studio), then:
 
 ```bash
+tpy studio         # optional visual builder at http://127.0.0.1:4200
 tpy build          # configure database + generate application layers
 tpy migrate        # apply migrations
 tpy seed           # optional sample data
@@ -141,16 +148,73 @@ API: `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `GET
 
 ---
 
+## Studio
+
+Local visual builder for `schema.tpy` — no CDN, no separate `npm install` for end users.
+
+```bash
+cd myapp
+tpy studio                 # http://127.0.0.1:4200
+tpy studio --port 5000
+tpy studio --no-open
+tpy studio --host 0.0.0.0  # opt-in; prints a security warning
+```
+
+Screens: Model Designer, Relations canvas, Database panel, Auth (sidecar `.tpy/studio.json`), Diff preview before save, Build console (SSE), API Explorer, Templates.
+
+Guide: [Studio docs](https://selvaganapathiarumugam.github.io/tamilPY/studio.html)
+
+---
+
+## Starter templates
+
+```bash
+tpy templates list
+tpy new myschool --template institute-admin
+tpy templates show crm
+```
+
+| Template | Focus |
+|----------|--------|
+| `crm` | Company, Contact, Deal, Activity |
+| `institute-admin` | Students, courses, fees, exams |
+| `inventory` | Products, warehouses, POs, stock |
+| `helpdesk` | Tickets, agents, SLAs, comments |
+| `blog-cms` | Posts, authors, tags, categories |
+
+Each ships `schema.tpy`, `admin-theme.json`, sample seeds, and README notes. Admin themes apply via `admin-theme.json` or `tpy admin --template <name>`.
+
+Guide: [Templates docs](https://selvaganapathiarumugam.github.io/tamilPY/templates.html)
+
+### Incremental make
+
+```bash
+tpy make:model Invoice --fields "amount:float,status:enum(draft,paid),user_id:uuid references User"
+tpy make:controller Invoice
+tpy make:service Invoice
+# --force required if a generated file was edited by hand
+```
+
+Guide: [Make commands](https://selvaganapathiarumugam.github.io/tamilPY/make-commands.html)
+
+---
+
 ## CLI reference
 
 | Command | Description |
 |---------|-------------|
 | `tpy new <name>` | Create a new project |
+| `tpy new <name> --template <t>` | Scaffold with a starter schema (`crm`, `institute-admin`, …) |
+| `tpy templates list` / `show` | List or print a starter template schema |
+| `tpy studio` | Local visual schema builder (`http://127.0.0.1:4200`) |
 | `tpy build` | Interactive database setup and code generation |
 | `tpy build --skip-db` | Generate using an existing `.env` |
 | `tpy build --with-ui` | Generate app layers and the React admin dashboard |
+| `tpy make:model` | Append a model to `schema.tpy` and generate only its layers |
+| `tpy make:controller` / `make:service` | Regenerate one layer for an existing model |
 | `tpy crud` | Regenerate CRUD layers from `schema.tpy` |
 | `tpy admin` | Generate a Vite + React admin dashboard |
+| `tpy admin --template <t>` | Apply starter admin theme tokens |
 | `tpy auth` | Enable JWT auth (login/register/refresh/logout), AuthRole + User, role seeds |
 | `tpy db configure` | Re-run the database configuration wizard |
 | `tpy migrate` | Create the database (if needed) and apply migrations |
@@ -266,6 +330,7 @@ SQLite, PostgreSQL, MySQL, and MongoDB are supported for generated CRUD and migr
 ```bash
 tpy serve          # terminal 1 — API
 tpy admin          # generate UI (once, or after schema changes)
+# themed: tpy admin --template crm
 cd admin
 npm install
 npm run dev        # terminal 2 — UI
@@ -293,8 +358,11 @@ Full client & platform guide (GitHub Pages):
 
 In-page sections: [Install](https://selvaganapathiarumugam.github.io/tamilPY/#install) · [Features](https://selvaganapathiarumugam.github.io/tamilPY/#features) · [Platform API](https://selvaganapathiarumugam.github.io/tamilPY/#platform) · [CLI](https://selvaganapathiarumugam.github.io/tamilPY/#commands)
 
-Feature cards open **study guides**  with setup, how-it-works, examples, and common mistakes — for example:
+Feature cards open **study guides** with setup, how-it-works, examples, and common mistakes — for example:
 
+- [Studio visual builder](https://selvaganapathiarumugam.github.io/tamilPY/studio.html)
+- [Starter templates](https://selvaganapathiarumugam.github.io/tamilPY/templates.html)
+- [Make commands](https://selvaganapathiarumugam.github.io/tamilPY/make-commands.html)
 - [Schema-first generation](https://selvaganapathiarumugam.github.io/tamilPY/schema.html)
 - [ApiResponse helpers](https://selvaganapathiarumugam.github.io/tamilPY/api-response.html)
 - [Query Builder & relations](https://selvaganapathiarumugam.github.io/tamilPY/query.html)

@@ -45,7 +45,8 @@ class FileStore(CacheStore):
     def put(self, key: str, value: Any, ttl: int | None = None) -> None:
         expires = None if ttl is None else time.time() + ttl
         path = self._path(key)
-        path.write_bytes(pickle.dumps((value, expires), protocol=pickle.HIGHEST_PROTOCOL))
+        payload = pickle.dumps((value, expires), protocol=pickle.HIGHEST_PROTOCOL)
+        path.write_bytes(payload)
 
     def forget(self, key: str) -> bool:
         path = self._path(key)

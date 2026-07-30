@@ -2,7 +2,7 @@ from pathlib import Path
 
 from tpy.parser.ast import FieldNode, ModelNode, ProgramNode
 from tpy.runtime.template_engine import TemplateEngine
-from tpy.utils.file_manager import FileManager
+from tpy.utils.generated import write_generated
 
 
 class RepositoryGenerator:
@@ -21,12 +21,19 @@ class RepositoryGenerator:
         "datetime": "datetime",
     }
 
-    def __init__(self, project_root: Path | str = ".") -> None:
+    def __init__(
+        self,
+        project_root: Path | str = ".",
+        *,
+        force: bool = True,
+    ) -> None:
         """
         Args:
             project_root: Root directory of the target TPY project.
+            force: Overwrite manually edited generated files.
         """
         self.project_root = Path(project_root)
+        self.force = force
         self.template = TemplateEngine()
         self.provider = ""
 
@@ -100,4 +107,4 @@ class RepositoryGenerator:
             / "repositories"
             / filename
         )
-        FileManager.write(output, content)
+        write_generated(output, content, force=self.force)

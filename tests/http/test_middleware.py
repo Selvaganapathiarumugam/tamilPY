@@ -7,11 +7,11 @@ from pathlib import Path
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 from tpy.http import HttpError, Middleware, MiddlewareManager, RequestIdMiddleware
 from tpy.http.middleware import CallNext
 from tpy.kernel import Application
-from starlette.requests import Request
 
 
 class AddHeaderMiddleware(Middleware):

@@ -7,11 +7,12 @@ database/database.sqlite3
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-dist/
-build/
+/dist/
+/build/
 *.egg-info/
 storage/
 .idea/
 .vscode/
 .cursor/
 test/
+tpy/studio/ui/node_modules/

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Starter templates — tamilPY Docs</title>
+<meta name="description" content="Scaffold realistic schema.tpy projects with tpy new --template and themed admin dashboards." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <span>Templates</span>
+    </div>
+    <p class="eyebrow">v0.1.10 · Study guide</p>
+    <h1>Starter templates</h1>
+    <p class="lead">Ship a realistic <code>schema.tpy</code>, sample seeds, and an admin theme instead of an empty project.</p>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>How to list and apply templates</li><li>What each starter includes</li><li>How admin themes work</li></ul></div>
+
+<h2>1. Setup</h2>
+<pre><span class="prompt">$</span> tpy templates list
+<span class="prompt">$</span> tpy templates show crm
+<span class="prompt">$</span> tpy new myapp --template crm
+<span class="prompt">$</span> cd myapp
+<span class="prompt">$</span> tpy build --skip-db &amp;&amp; tpy migrate &amp;&amp; tpy seed</pre>
+
+<h2>2. Included templates</h2>
+<table class="doc-table">
+  <thead><tr><th>Name</th><th>Models (summary)</th></tr></thead>
+  <tbody>
+    <tr><td><code>crm</code></td><td>Company, Contact, Deal, Activity</td></tr>
+    <tr><td><code>institute-admin</code></td><td>Teacher, Course, Batch, Student, Attendance, FeePayment, Exam</td></tr>
+    <tr><td><code>inventory</code></td><td>Supplier, Warehouse, Product, PurchaseOrder, StockMovement</td></tr>
+    <tr><td><code>helpdesk</code></td><td>Category, Agent, SLA, Ticket, Comment</td></tr>
+    <tr><td><code>blog-cms</code></td><td>Author, Category, Tag, Post, PostTag, Comment</td></tr>
+  </tbody>
+</table>
+
+<h2>3. How it works</h2>
+<ol>
+  <li>Each template lives under <code>tpy/templates/&lt;name&gt;/</code> with <code>schema.tpy</code>, <code>admin-theme.json</code>, <code>seeds/</code>, and <code>README.md</code>.</li>
+  <li><code>tpy new --template</code> scaffolds the normal project, then copies those files in.</li>
+  <li><code>admin-theme.json</code> sets dashboard title, accent color, and landing model for <code>tpy admin</code>.</li>
+</ol>
+
+<h2>4. Admin themes</h2>
+<pre><span class="prompt">$</span> tpy admin --template crm
+<span style="color:var(--muted)"># or place admin-theme.json in the project root</span></pre>
+
+<h2>5. Common mistakes</h2>
+<ul>
+  <li><strong>Unknown template name</strong> — run <code>tpy templates list</code> first.</li>
+  <li><strong>Expecting fake bulk data</strong> — starter seeds are small demos; <code>tpy seed --fake</code> is planned separately.</li>
+</ul>
+
+<h2>6. Related</h2>
+<ul>
+  <li><a href="studio.html">Studio</a> (apply templates from the UI)</li>
+  <li><a href="admin.html">Admin dashboard</a></li>
+</ul>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+  };
+  btn.addEventListener("click", () => setOpen(btn.getAttribute("aria-expanded") !== "true"));
+  menu.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => setOpen(false)));
+})();
+</script>
+</body>
+</html>

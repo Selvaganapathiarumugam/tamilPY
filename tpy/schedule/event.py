@@ -5,9 +5,10 @@ A single scheduled callback or job.
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from tpy.schedule.cron import CronExpression
 from tpy.schedule.exceptions import ScheduleError

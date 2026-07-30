@@ -4,7 +4,8 @@ Legacy fluent validation helpers.
 Prefer ``tpy.validation.Validator.make`` for rule-string validation.
 """
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class ValidationError(Exception):

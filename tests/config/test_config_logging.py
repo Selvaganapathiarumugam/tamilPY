@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from tpy.config import Config, ConfigLoader
-from tpy.logging import LogManager, get_logger, reset_log_manager
 from tpy.kernel import Application
+from tpy.logging import LogManager, get_logger, reset_log_manager
 
 
 def test_log_manager_channels(tmp_path: Path, capsys):

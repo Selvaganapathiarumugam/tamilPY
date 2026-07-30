@@ -2,7 +2,6 @@
 tamilPY HTTP helpers (responses, middleware, health, lifecycle).
 """
 
-from tpy.http.route_cache import RouteCache
 from tpy.http.builtin_middleware import RequestIdMiddleware
 from tpy.http.exceptions import HttpError
 from tpy.http.health import (
@@ -15,6 +14,7 @@ from tpy.http.health import (
 from tpy.http.lifecycle import Lifecycle, LifecycleMiddleware, attach_lifecycle
 from tpy.http.middleware import Middleware, MiddlewareManager
 from tpy.http.response import ApiResponse
+from tpy.http.route_cache import RouteCache
 
 __all__ = [
     "ApiResponse",

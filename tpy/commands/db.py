@@ -21,7 +21,7 @@ def register(app: typer.Typer) -> None:
             DatabaseWizard(Path(".")).run()
         except Exception as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error
 
     @db_app.command("info")
     def db_info() -> None:
@@ -40,4 +40,4 @@ def register(app: typer.Typer) -> None:
             Console.success("Database connection OK.")
         except Exception as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error

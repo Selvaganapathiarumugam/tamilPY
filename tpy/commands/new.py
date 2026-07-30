@@ -3,6 +3,7 @@ from pathlib import Path
 import typer
 
 from tpy.runtime.template_engine import TemplateEngine
+from tpy.starter_templates import apply_template_files, get_template
 from tpy.utils.console import Console
 from tpy.utils.file_manager import FileManager
 
@@ -10,7 +11,15 @@ from tpy.utils.file_manager import FileManager
 def register(app: typer.Typer):
 
     @app.command("new")
-    def new(project_name: str):
+    def new(
+        project_name: str,
+        template: str | None = typer.Option(
+            None,
+            "--template",
+            "-t",
+            help="Starter template name (crm, institute-admin, …).",
+        ),
+    ):
         """
         Create a new TPY project.
         """
@@ -20,6 +29,13 @@ def register(app: typer.Typer):
         if FileManager.exists(root):
             Console.error(f"Project '{project_name}' already exists.")
             raise typer.Exit()
+
+        if template is not None:
+            try:
+                get_template(template)
+            except KeyError as error:
+                Console.error(str(error))
+                raise typer.Exit(1) from error
 
         engine = TemplateEngine()
 
@@ -62,7 +78,8 @@ def register(app: typer.Typer):
         ]
 
         # Template filename → project filename.
-        # Dotfiles use non-hidden template names so setuptools includes them in PyPI wheels.
+        # Dotfiles use non-hidden template names so setuptools
+        # includes them in PyPI wheels.
         templates = [
             ("README.md", "README.md"),
             ("main.py", "app/main.py"),
@@ -121,10 +138,18 @@ def register(app: typer.Typer):
             "from fastapi import APIRouter\n\napi_router = APIRouter()\n",
         )
 
+        if template is not None:
+            info = apply_template_files(root, template)
+            Console.success(
+                f"Applied template '{info.name}' "
+                f"({len(info.models)} model(s))."
+            )
+
         Console.success(
             f"Project '{project_name}' created successfully."
         )
         Console.info("Next steps:")
         Console.info(f"  cd {project_name}")
-        Console.info("  edit schema.tpy")
+        if template is None:
+            Console.info("  edit schema.tpy")
         Console.info("  tpy build")

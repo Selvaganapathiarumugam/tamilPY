@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import importlib.util
 from abc import ABC, abstractmethod
 from pathlib import Path
-import importlib.util
 from typing import Any
 
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from tpy.exceptions import TpyParseError
-from tpy.parser.tokens import Token, TokenType, KEYWORDS
+from tpy.parser.tokens import KEYWORDS, Token, TokenType
 
 
 class Lexer:

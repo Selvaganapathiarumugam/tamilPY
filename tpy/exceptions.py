@@ -21,3 +21,13 @@ class TpyProviderError(TpyError):
 
 class TpyGeneratorError(TpyError):
     """Raised when code generation fails."""
+
+
+class GeneratedFileConflict(TpyGeneratorError):
+    """Raised when a generated file was edited and ``--force`` was not passed."""
+
+    def __init__(self, path: str) -> None:
+        self.path = path
+        super().__init__(
+            f"{path} has manual edits; re-run with --force to overwrite"
+        )

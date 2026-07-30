@@ -1,13 +1,19 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
+import { LANDING_ROUTE_PREFIX } from "./config.js";
 import { models } from "./data/models.js";
 import LoginPage from "./pages/LoginPage.jsx";
 import ModelFormPage from "./pages/ModelFormPage.jsx";
 import ModelListPage from "./pages/ModelListPage.jsx";
 
 export default function App() {
-  const firstModelPath = models[0] ? `/${models[0].routePrefix}` : "/";
+  const landing =
+    LANDING_ROUTE_PREFIX
+      ? `/${LANDING_ROUTE_PREFIX}`
+      : models[0]
+        ? `/${models[0].routePrefix}`
+        : "/";
 
   return (
     <Routes>
@@ -19,7 +25,7 @@ export default function App() {
           </RequireAuth>
         }
       >
-        <Route path="/" element={<Navigate to={firstModelPath} replace />} />
+        <Route path="/" element={<Navigate to={landing} replace />} />
         {models.map((model) => (
           <Route
             key={`${model.routePrefix}-list`}

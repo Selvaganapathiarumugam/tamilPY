@@ -4,8 +4,7 @@ Database-backed queue driver using a provider connection.
 
 from __future__ import annotations
 
-import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from tpy.queue.drivers.base import QueueDriver, ReservedJob
@@ -15,7 +14,7 @@ from tpy.queue.serializer import deserialize_job, serialize_job
 
 
 def _utcnow() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    return datetime.now(UTC).replace(microsecond=0).isoformat()
 
 
 class DatabaseQueueDriver(QueueDriver):

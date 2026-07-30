@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -94,7 +94,7 @@ class MongoProvider(BaseProvider):
         db["_tpy_migrations"].insert_one(
             {
                 "name": name,
-                "applied_at": datetime.now(timezone.utc),
+                "applied_at": datetime.now(UTC),
             }
         )
 

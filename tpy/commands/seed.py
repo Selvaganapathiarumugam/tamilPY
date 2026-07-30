@@ -45,4 +45,4 @@ def register(app: typer.Typer) -> None:
             Console.success("Database seeding completed.")
         except Exception as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error

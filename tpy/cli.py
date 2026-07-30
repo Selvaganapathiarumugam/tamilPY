@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import importlib
 import pkgutil
-from typing import Optional
 
 import typer
 
@@ -53,7 +52,7 @@ _register_commands()
 
 @app.callback()
 def _root(
-    version: Optional[bool] = typer.Option(
+    version: bool | None = typer.Option(
         None,
         "--version",
         "-V",

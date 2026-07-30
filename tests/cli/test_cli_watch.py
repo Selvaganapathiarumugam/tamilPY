@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+
 from typer.testing import CliRunner
 
 from tpy.cli import app
 from tpy.commands import watch as watch_mod
-
 
 runner = CliRunner()
 

@@ -4,13 +4,13 @@ End-to-end CLI smoke: new → build → migrate → serve → /health.
 
 from __future__ import annotations
 
-from pathlib import Path
 import socket
 import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 
 def _free_port() -> int:
@@ -43,9 +43,10 @@ model Item {
 """,
         encoding="utf-8",
     )
+    db_url = (project / "database" / "database.sqlite3").as_posix()
     (project / ".env").write_text(
         "TPY_DATABASE=sqlite\n"
-        f"DATABASE_URL=sqlite:///{(project / 'database' / 'database.sqlite3').as_posix()}\n"
+        f"DATABASE_URL=sqlite:///{db_url}\n"
         "TPY_HOST=127.0.0.1\n"
         "TPY_PORT=8000\n",
         encoding="utf-8",

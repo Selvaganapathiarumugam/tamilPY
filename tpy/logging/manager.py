@@ -161,7 +161,10 @@ def log_manager() -> LogManager:
     return _manager
 
 
-def get_logger(name: str = "app", log_dir: Path | str = "storage/logs") -> ContextLogger:
+def get_logger(
+    name: str = "app",
+    log_dir: Path | str = "storage/logs",
+) -> ContextLogger:
     """
     Framework logger entry point (stdio logging).
 

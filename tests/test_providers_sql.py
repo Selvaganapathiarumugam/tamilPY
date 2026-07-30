@@ -1,4 +1,3 @@
-from tpy.database.column import Column
 from tpy.database.migration import Migration
 from tpy.providers.sqlite.provider import SQLiteProvider
 

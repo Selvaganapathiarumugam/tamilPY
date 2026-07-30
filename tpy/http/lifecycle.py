@@ -5,8 +5,9 @@ Request / application lifecycle hooks.
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator, Callable
+from typing import Any
 
 from starlette.requests import Request
 from starlette.responses import Response

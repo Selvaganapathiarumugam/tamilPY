@@ -3,6 +3,8 @@ from pathlib import Path
 from tpy.parser.ast import FieldNode, ModelNode, ProgramNode
 from tpy.runtime.template_engine import TemplateEngine
 from tpy.utils.file_manager import FileManager
+from tpy.utils.generated import is_pristine, write_generated
+from tpy.exceptions import GeneratedFileConflict
 
 
 class MigrationGenerator:
@@ -15,12 +17,19 @@ class MigrationGenerator:
 
     FLUENT_CONSTRAINTS = ("primary", "unique", "nullable", "index")
 
-    def __init__(self, project_root: Path | str = ".") -> None:
+    def __init__(
+        self,
+        project_root: Path | str = ".",
+        *,
+        force: bool = True,
+    ) -> None:
         """
         Args:
             project_root: Root directory of the target TPY project.
+            force: Overwrite manually edited generated files.
         """
         self.project_root = Path(project_root)
+        self.force = force
         self.template = TemplateEngine()
         self._enum_lookup: dict[str, list[str]] = {}
 
@@ -110,15 +119,11 @@ class MigrationGenerator:
 
         enum_values = self._resolve_enum_values(field)
         if enum_values:
-            quoted = ", ".join(repr(value) for value in enum_values)
-            expr = (
-                f"{field.name} IN ({quoted})"
-            )
             # CHECK uses SQL identifiers without Python quotes in values list.
             sql_values = ", ".join(
                 "'" + value.replace("'", "''") + "'" for value in enum_values
             )
-            chain += f".check(\"{field.name} IN ({sql_values})\")"
+            chain += f'.check("{field.name} IN ({sql_values})")'
 
         if field.has_default and field.default is not None:
             chain += f".default({field.default!r})"
@@ -141,14 +146,24 @@ class MigrationGenerator:
         FileManager.create_directory(migrations_dir)
 
         legacy = migrations_dir / f"{stem}_migration.py"
+        candidates = []
         if FileManager.exists(legacy):
-            legacy.unlink()
+            candidates.append(legacy)
+        candidates.extend(migrations_dir.glob(f"*_{stem}_migration.py"))
 
-        for path in migrations_dir.glob(f"*_{stem}_migration.py"):
+        for path in candidates:
+            if not self.force and not is_pristine(path):
+                raise GeneratedFileConflict(str(path))
+
+        for path in candidates:
             path.unlink()
 
         filename = f"{sequence:03d}_{stem}_migration.py"
-        FileManager.write(migrations_dir / filename, content)
+        write_generated(
+            migrations_dir / filename,
+            content,
+            force=self.force,
+        )
 
     @property
     def migrations_path(self) -> Path:
