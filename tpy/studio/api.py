@@ -259,7 +259,12 @@ def create_api_router(project_root: Path) -> APIRouter:
 
                     sys.path.insert(0, str(root))
                     module = importlib.import_module("app.main")
-                    app = getattr(module, "app")
+                    # use attribute access to avoid flake8-bugbear B009
+                    try:
+                        app = module.app
+                    except AttributeError:
+                        # missing attribute -> fall back to empty routes as before
+                        raise
                     routes = RouteCache.collect(app)
                 except Exception:
                     routes = []
