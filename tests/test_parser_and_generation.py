@@ -1,12 +1,11 @@
 import importlib.util
 
 from tpy.database import Migration
-from tpy.providers.mongodb.provider import MongoProvider
 from tpy.generator.migration_generator import MigrationGenerator
 from tpy.generator.repository_generator import RepositoryGenerator
 from tpy.parser.lexer import Lexer
 from tpy.parser.parser import Parser
-
+from tpy.providers.mongodb.provider import MongoProvider
 
 SCHEMA = """
 database postgres
@@ -90,7 +89,10 @@ def test_repository_generator_uses_schema_allowlist_before_sql(tmp_path):
         tmp_path / "app" / "repositories" / "post.py"
     ).read_text(encoding="utf-8")
 
-    assert "COLUMNS = frozenset(('id', 'title', 'body', 'user_id', 'status'))" in repository
+    assert (
+        "COLUMNS = frozenset(('id', 'title', 'body', 'user_id', 'status'))"
+        in repository
+    )
     assert (
         "WRITABLE_COLUMNS = frozenset(('title', 'body', 'user_id', 'status'))"
         in repository

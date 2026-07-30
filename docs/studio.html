@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Studio visual builder — tamilPY Docs</title>
+<meta name="description" content="Use tpy studio to design schema.tpy, configure the database, and run build/migrate/seed from a local UI." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<nav class="nav">
+  <div class="wrap nav-bar">
+    <a class="logo" href="index.html"><span class="glyph">தமிழ்</span>PY</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navlinks" id="site-menu">
+      <a href="index.html">Home</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#platform">Platform</a>
+      <a href="index.html#commands">CLI</a>
+      <a href="schema.html">Schema</a>
+      <a href="index.html#author">Author</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">/</span>
+      <a href="index.html#platform">Platform</a>
+      <span class="sep">/</span>
+      <span>Studio</span>
+    </div>
+    <p class="eyebrow">v0.1.10 · Study guide</p>
+    <h1>Studio visual builder</h1>
+    <p class="lead">Design <code>schema.tpy</code>, configure the database, manage auth, and stream build/migrate/seed logs from a local UI — without requiring end users to run <code>npm install</code>.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="index.html#platform">← Platform</a>
+      <a class="btn btn-primary" href="index.html#install">Install tamilPY</a>
+    </div>
+  </div>
+</header>
+
+<section class="doc-body">
+  <div class="wrap">
+    <div class="prose">
+<div class="callout"><strong style="color:var(--ink);">What you will learn</strong><ul style="margin:0.6rem 0 0;"><li>How to start Studio safely on localhost</li><li>Preview/diff before writing <code>schema.tpy</code></li><li>Which API endpoints power the UI</li></ul></div>
+
+<h2>1. Setup</h2>
+<pre><span class="prompt">$</span> cd myapp
+<span class="prompt">$</span> tpy studio                 <span style="color:var(--muted)"># http://127.0.0.1:4200</span>
+<span class="prompt">$</span> tpy studio --port 5000
+<span class="prompt">$</span> tpy studio --no-open
+<span class="prompt">$</span> tpy studio --host 0.0.0.0  <span style="color:var(--muted)"># opt-in; security warning</span>
+<span class="prompt">$</span> tpy studio --version</pre>
+<p>Studio binds to <code>127.0.0.1</code> by default. Non-loopback hosts print a warning because there is no auth on the Studio API.</p>
+
+<h2>2. How it works</h2>
+<ol>
+  <li><code>tpy studio</code> starts a FastAPI app that serves the pre-built SPA from <code>tpy/studio/ui/dist/</code>.</li>
+  <li>The UI loads the current schema as JSON via <code>GET /api/studio/schema</code>.</li>
+  <li>Edits are previewed with <code>POST /api/studio/schema/preview</code> (unified diff + validation) — nothing is written yet.</li>
+  <li>Explicit save calls <code>POST /api/studio/schema/save</code>, which serializes a deterministic <code>schema.tpy</code>.</li>
+  <li>Build / migrate / seed stream CLI output over SSE.</li>
+</ol>
+
+<h2>3. Screens</h2>
+<table class="doc-table">
+  <thead><tr><th>Screen</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td>Models</td><td>Edit models/fields, constraints, references</td></tr>
+    <tr><td>Relations</td><td>Node/edge canvas for <code>relations { }</code></td></tr>
+    <tr><td>Database</td><td>Provider + connection (secrets redacted / write-only)</td></tr>
+    <tr><td>Auth</td><td>Roles &amp; bootstrap in <code>.tpy/studio.json</code></td></tr>
+    <tr><td>Diff</td><td>Unified diff before Apply</td></tr>
+    <tr><td>Build</td><td>Build / Migrate / Rollback / Seed / Serve logs</td></tr>
+    <tr><td>API</td><td>Minimal try-it explorer (OpenAPI if <code>:8000</code> is up)</td></tr>
+    <tr><td>Templates</td><td>Preview/apply starter templates</td></tr>
+  </tbody>
+</table>
+
+<h2>4. Common mistakes</h2>
+<ul>
+  <li><strong>Expecting auth in schema.tpy</strong> — Studio auth lives in <code>.tpy/studio.json</code>; enabling JWT still uses <code>tpy auth</code> generation.</li>
+  <li><strong>Binding to 0.0.0.0 casually</strong> — Studio has no login; keep it on localhost unless you trust the network.</li>
+  <li><strong>Rollback without confirm</strong> — API requires <code>{"confirm": true}</code>.</li>
+  <li><strong>Missing UI dist in editable installs</strong> — rebuild with <code>cd tpy/studio/ui &amp;&amp; npm install &amp;&amp; npm run build</code>.</li>
+</ul>
+
+<h2>5. Related</h2>
+<ul>
+  <li><a href="templates.html">Starter templates</a></li>
+  <li><a href="make-commands.html">Make commands</a></li>
+  <li><a href="schema.html">Schema-first generation</a></li>
+</ul>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <p class="brand">tamilPY documentation</p>
+      <p class="blurb">Client study guides for the schema-driven Python framework.</p>
+    </div>
+    <div class="copy">
+      <p>© <a href="https://selvacv.lovable.app" target="_blank" rel="noopener noreferrer">Selvaganapathi Arumugam</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("site-menu");
+  if (!btn || !menu) return;
+  const setOpen = (open) => {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();
+</script>
+</body>
+</html>

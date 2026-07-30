@@ -4,7 +4,8 @@ Advanced rule-based validator.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from tpy.validation.exceptions import ValidationException
 from tpy.validation.parser import parse_rules

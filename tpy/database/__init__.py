@@ -2,6 +2,6 @@
 
 from tpy.database.column import Column
 from tpy.database.migration import Migration
-from tpy.database.seeder import SeedRunner, Seeder
+from tpy.database.seeder import Seeder, SeedRunner
 
 __all__ = ["Column", "Migration", "Seeder", "SeedRunner"]

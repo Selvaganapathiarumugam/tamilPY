@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import sys
 from datetime import datetime
 from enum import IntEnum
 from pathlib import Path
-import sys
 
 
 class LogLevel(IntEnum):

@@ -10,7 +10,6 @@ from tpy.parser.ast import (
 )
 from tpy.parser.tokens import TokenType
 
-
 _FK_ACTIONS = {
     TokenType.CASCADE: "cascade",
     TokenType.SET_NULL: "set_null",
@@ -53,18 +52,18 @@ class Parser:
         return program
 
     def parse_database(self):
-        self.consume(TokenType.DATABASE)
+        db_token = self.consume(TokenType.DATABASE)
         provider = self.consume_any(
             TokenType.POSTGRES,
             TokenType.MYSQL,
             TokenType.SQLITE,
             TokenType.MONGODB,
         )
-        return DatabaseNode(provider.value)
+        return DatabaseNode(provider.value, line=db_token.line)
 
     def parse_enum(self) -> EnumNode:
         self.consume(TokenType.ENUM)
-        name = self.consume(TokenType.IDENTIFIER).value
+        name_token = self.consume(TokenType.IDENTIFIER)
         self.consume(TokenType.LBRACE)
         values: list[str] = []
         while not self.match(TokenType.RBRACE):
@@ -75,15 +74,20 @@ class Parser:
             if self.match(TokenType.COMMA):
                 self.advance()
         self.consume(TokenType.RBRACE)
-        return EnumNode(name=name, values=values)
+        return EnumNode(
+            name=name_token.value,
+            values=values,
+            line=name_token.line,
+        )
 
     def parse_model(self):
         self.consume(TokenType.MODEL)
-        name = self.consume(TokenType.IDENTIFIER).value
+        name_token = self.consume(TokenType.IDENTIFIER)
         self.consume(TokenType.LBRACE)
 
         fields = []
         unique_together: list[list[str]] = []
+        unique_together_lines: list[int | None] = []
         relations: list[RelationNode] = []
 
         while not self.match(TokenType.RBRACE):
@@ -92,7 +96,9 @@ class Parser:
                 continue
 
             if self.match(TokenType.UNIQUE) and self._next_is(TokenType.LPAREN):
+                line = self.current().line
                 unique_together.append(self.parse_unique_together())
+                unique_together_lines.append(line)
                 continue
 
             if self.match(TokenType.RELATIONS):
@@ -103,10 +109,12 @@ class Parser:
 
         self.consume(TokenType.RBRACE)
         return ModelNode(
-            name=name,
+            name=name_token.value,
             fields=fields,
             unique_together=unique_together,
             relations=relations,
+            line=name_token.line,
+            unique_together_lines=unique_together_lines,
         )
 
     def parse_relations_block(self) -> list[RelationNode]:
@@ -185,6 +193,7 @@ class Parser:
             through=through,
             pivot_foreign_key=pivot_foreign_key,
             pivot_related_key=pivot_related_key,
+            line=kind_token.line,
         )
 
     def parse_unique_together(self) -> list[str]:
@@ -204,7 +213,7 @@ class Parser:
         return columns
 
     def parse_field(self):
-        name = self.consume(TokenType.IDENTIFIER).value
+        name_token = self.consume(TokenType.IDENTIFIER)
         self.consume(TokenType.COLON)
 
         datatype, enum_values = self.parse_datatype()
@@ -246,13 +255,14 @@ class Parser:
             break
 
         return FieldNode(
-            name=name,
+            name=name_token.value,
             datatype=datatype,
             constraints=constraints,
             default=default_value,
             has_default=has_default,
             reference=reference,
             enum_values=enum_values,
+            line=name_token.line,
         )
 
     def parse_datatype(self) -> tuple[str, list[str]]:
@@ -309,7 +319,8 @@ class Parser:
         self.error(f"Expected a default value, got {token.type.name}")
 
     def parse_reference(self):
-        model = self.consume(TokenType.IDENTIFIER).value
+        model_token = self.consume(TokenType.IDENTIFIER)
+        model = model_token.value
         column = "id"
 
         if self.match(TokenType.DOT):
@@ -334,6 +345,7 @@ class Parser:
             column=column,
             on_delete=on_delete,
             on_update=on_update,
+            line=model_token.line,
         )
 
     def _next_is(self, token_type: TokenType) -> bool:

@@ -4,7 +4,7 @@ Parse pipe-delimited rule strings into Rule instances.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any
 
 from tpy.validation.rules import RULE_BUILDERS, Rule
 

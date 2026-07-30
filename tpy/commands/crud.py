@@ -23,4 +23,4 @@ def register(app: typer.Typer) -> None:
             )
         except Exception as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error

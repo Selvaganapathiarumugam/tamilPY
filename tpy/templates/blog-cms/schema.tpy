@@ -1,0 +1,61 @@
+database sqlite
+
+model Author {
+  id: uuid primary
+  name: string required
+  email: string unique required
+  bio: string nullable
+  relations {
+    has_many Post as posts
+  }
+}
+
+model Category {
+  id: uuid primary
+  name: string unique required
+  slug: string unique required
+  relations {
+    has_many Post as posts
+  }
+}
+
+model Tag {
+  id: uuid primary
+  name: string unique required
+  relations {
+    belongs_to_many Post as posts through PostTag
+  }
+}
+
+model Post {
+  id: uuid primary
+  title: string required
+  slug: string unique required
+  body: string required
+  status: enum(draft, published, archived) default "draft"
+  author_id: uuid references Author
+  category_id: uuid references Category
+  relations {
+    belongs_to Author as author via author_id
+    belongs_to Category as category via category_id
+    belongs_to_many Tag as tags through PostTag
+    has_many Comment as comments
+  }
+}
+
+model PostTag {
+  id: uuid primary
+  post_id: uuid references Post
+  tag_id: uuid references Tag
+}
+
+model Comment {
+  id: uuid primary
+  post_id: uuid references Post
+  author_name: string required
+  body: string required
+  approved: bool default false
+  relations {
+    belongs_to Post as post via post_id
+  }
+}

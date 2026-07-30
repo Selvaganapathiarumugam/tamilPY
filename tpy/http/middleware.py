@@ -4,8 +4,8 @@ Named middleware and middleware groups for FastAPI apps.
 
 from __future__ import annotations
 
-from abc import ABC
-from typing import Any, Awaitable, Callable, Sequence
+from collections.abc import Awaitable, Callable, Sequence
+from typing import Any
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -17,7 +17,7 @@ from tpy.http.exceptions import HttpError
 CallNext = Callable[[Request], Awaitable[Response]]
 
 
-class Middleware(ABC):
+class Middleware:
     """
     Sync-friendly HTTP middleware.
 

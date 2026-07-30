@@ -1,6 +1,6 @@
+from tpy.exceptions import TpyParseError
 from tpy.parser.lexer import Lexer
 from tpy.parser.parser import Parser
-from tpy.exceptions import TpyParseError
 
 
 def _parse(source: str):
@@ -57,6 +57,6 @@ model Enrollment {
 def test_parse_error_is_tpy_parse_error():
     try:
         _parse("model {")
-        assert False, "expected TpyParseError"
+        raise AssertionError("expected TpyParseError")
     except TpyParseError:
         pass

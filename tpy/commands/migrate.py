@@ -42,7 +42,7 @@ def register(app: typer.Typer) -> None:
             Console.success(f"Rolled back: {name}")
         except Exception as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error
 
     @migrate_app.command("status")
     def migrate_status() -> None:
@@ -64,7 +64,7 @@ def register(app: typer.Typer) -> None:
                 Console.info(f"{row['name']} @ {row['applied_at']}")
         except Exception as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error
 
 
 def _missing_migration_models(project_root: Path) -> list[str]:
@@ -134,4 +134,4 @@ def _run_migrate() -> None:
             Console.success(f"Migrated: {name}")
     except Exception as error:
         Console.error(str(error))
-        raise typer.Exit(1)
+        raise typer.Exit(1) from error

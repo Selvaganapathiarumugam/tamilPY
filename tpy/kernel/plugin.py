@@ -4,9 +4,9 @@ Plugin contract and discovery.
 
 from __future__ import annotations
 
-from abc import ABC
+from collections.abc import Iterable
 from importlib.metadata import entry_points
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 from tpy.kernel.exceptions import PluginError
 from tpy.kernel.provider import ServiceProvider
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 ENTRY_POINT_GROUP = "tamilpy.plugins"
 
 
-class Plugin(ABC):
+class Plugin:
     """
     Distributable extension that contributes providers and hooks.
 

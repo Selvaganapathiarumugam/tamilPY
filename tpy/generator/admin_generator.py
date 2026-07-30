@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
 import json
+from pathlib import Path
 
 from tpy.parser.ast import FieldNode, ModelNode, ProgramNode
 from tpy.runtime.template_engine import TemplateEngine
+from tpy.starter_templates import load_theme
 from tpy.utils.file_manager import FileManager
 
 
@@ -70,12 +71,14 @@ class AdminGenerator:
         self,
         ast: ProgramNode,
         api_base_url: str = "http://127.0.0.1:8000",
+        *,
+        theme_name: str | None = None,
     ) -> None:
         """
         Generate admin app files for every model in the AST.
         """
         self.cleanup_legacy_pages()
-        context = self.build_context(ast, api_base_url)
+        context = self.build_context(ast, api_base_url, theme_name=theme_name)
         self.write_scaffold(context)
         self.write_models_registry(ast)
 
@@ -83,6 +86,8 @@ class AdminGenerator:
         self,
         ast: ProgramNode,
         api_base_url: str,
+        *,
+        theme_name: str | None = None,
     ) -> dict:
         """Build app-level template context."""
         models = [
@@ -92,10 +97,25 @@ class AdminGenerator:
             }
             for model in ast.models
         ]
+        theme = load_theme(theme_name, project_root=self.project_root)
+        landing = theme.get("landing_model")
+        landing_prefix = None
+        if landing:
+            for model in ast.models:
+                if model.name == landing:
+                    landing_prefix = self.route_prefix(model)
+                    break
+        if landing_prefix is None and models:
+            landing_prefix = models[0]["route_prefix"]
+
         return {
             "api_base_url": api_base_url.rstrip("/"),
             "models": models,
             "has_models": bool(models),
+            "theme_title": theme.get("title") or "Admin",
+            "theme_subtitle": theme.get("subtitle") or "tamilPY dashboard",
+            "theme_accent": theme.get("accent") or "#2563eb",
+            "landing_route_prefix": landing_prefix or "",
         }
 
     def build_model_descriptor(
@@ -172,7 +192,9 @@ class AdminGenerator:
             "/** Auto-generated from schema.tpy — do not edit by hand. */\n"
             f"export const models = {payload};\n\n"
             "export function getModel(routePrefix) {\n"
-            "  return models.find((model) => model.routePrefix === routePrefix) || null;\n"
+            "  return models.find(\n"
+            "    (model) => model.routePrefix === routePrefix\n"
+            "  ) || null;\n"
             "}\n"
         )
         FileManager.write(

@@ -25,6 +25,8 @@ def prompt_api_base_url(
 def generate_admin(
     project_root: Path | str = ".",
     api_base_url: str | None = None,
+    *,
+    theme_name: str | None = None,
 ) -> int:
     """
     Parse schema.tpy once and generate the React admin dashboard.
@@ -45,7 +47,11 @@ def generate_admin(
 
     builder = Builder(project_root=root)
     ast = builder.parse_schema()
-    AdminGenerator(root).generate(ast, base_url)
+    AdminGenerator(root).generate(
+        ast,
+        base_url,
+        theme_name=theme_name,
+    )
     return len(ast.models)
 
 
@@ -59,6 +65,12 @@ def register(app: typer.Typer) -> None:
             "--api-base-url",
             help="FastAPI backend base URL for the generated admin app.",
         ),
+        template: str | None = typer.Option(
+            None,
+            "--template",
+            "-t",
+            help="Apply starter template admin theme (or use admin-theme.json).",
+        ),
     ) -> None:
         """
         Generate a Vite + React admin dashboard from ``schema.tpy``.
@@ -68,6 +80,7 @@ def register(app: typer.Typer) -> None:
             model_count = generate_admin(
                 project_root=Path("."),
                 api_base_url=api_base_url,
+                theme_name=template,
             )
             Console.success(
                 f"Admin dashboard generated for {model_count} model(s)."
@@ -78,4 +91,4 @@ def register(app: typer.Typer) -> None:
             raise
         except Exception as error:
             Console.error(str(error))
-            raise typer.Exit(1)
+            raise typer.Exit(1) from error

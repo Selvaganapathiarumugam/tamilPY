@@ -27,6 +27,7 @@
       <a href="#admin">Admin</a>
       <a href="#auth">Auth</a>
       <a href="schema.html">Schema</a>
+      <a href="studio.html">Studio</a>
       <a href="#commands">CLI</a>
       <a href="#guide">Guide</a>
       <a href="#author">Author</a>
@@ -38,9 +39,9 @@
   <div class="wrap">
     <div class="hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow">Schema-driven Python framework · v0.1.9</p>
+        <p class="eyebrow">Schema-driven Python framework · v0.1.10</p>
         <h1>Draft the schema.<br>Ship the <span class="accent">API</span>.</h1>
-        <p class="lead">tamilPY reads one <code class="mono">schema.tpy</code> file and generates a fully layered FastAPI app — models, migrations, services, and routes — for SQLite, PostgreSQL, MySQL, or MongoDB. The platform includes Query Builder, events, queues, cache, validation, kernel providers, storage, route/config caching, and <code class="mono">tpy watch</code>.</p>
+        <p class="lead">tamilPY reads one <code class="mono">schema.tpy</code> file and generates a fully layered FastAPI app — models, migrations, services, and routes — for SQLite, PostgreSQL, MySQL, or MongoDB. <strong>v0.1.10</strong> adds <code class="mono">tpy studio</code>, starter templates, incremental <code class="mono">make:*</code> commands, and shared schema serialize/validate.</p>
         <div class="cta-row">
           <a class="btn btn-primary" href="#install">$ pip install tamilPY</a>
           <a class="btn btn-ghost" href="#flow">See the build sequence</a>
@@ -318,11 +319,36 @@
   <div class="wrap">
     <div class="section-head">
       <p class="eyebrow">Runtime platform</p>
-      <h2>API reference (Features 1–20)</h2>
-      <p class="lead">Professional documentation for the tamilPY runtime — Query Builder through watch mode — in one GitHub Pages guide.</p>
+      <h2>API reference &amp; DX guides</h2>
+      <p class="lead">Runtime platform (Query Builder through watch) plus <strong>v0.1.10</strong> Studio, templates, and make commands.</p>
     </div>
 
     <div class="grid">
+      <a class="tile" href="studio.html">
+        <span class="tag">DX · 0.1.10</span>
+        <h3>Studio visual builder</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">tpy studio
+# http://127.0.0.1:4200 — schema · DB · auth · build SSE</pre>
+        <p style="margin-top:0.7rem;">Local UI with preview/diff before writing <code>schema.tpy</code>. No end-user npm required.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="templates.html">
+        <span class="tag">DX · 0.1.10</span>
+        <h3>Starter templates</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">tpy new myapp --template crm
+tpy templates list
+tpy admin --template crm</pre>
+        <p style="margin-top:0.7rem;">crm · institute-admin · inventory · helpdesk · blog-cms with admin themes.</p>
+      <span class="more">Read guide →</span>
+      </a>
+      <a class="tile" href="make-commands.html">
+        <span class="tag">DX · 0.1.10</span>
+        <h3>make:model · controller · service</h3>
+        <pre style="margin:0;padding:0.75rem;font-size:0.78rem;">tpy make:model Invoice --fields "amount:float,status:enum(draft,paid)"
+tpy make:service Invoice --force</pre>
+        <p style="margin-top:0.7rem;">Incremental generation + <code># tpy:generated:sha256:</code> markers.</p>
+      <span class="more">Read guide →</span>
+      </a>
       <a class="tile" href="query.html">
         <span class="tag">Query</span>
         <h3>Query Builder &amp; relations</h3>
@@ -745,11 +771,15 @@ status: string default "draft"</pre>
         <h3>Scaffold &amp; generate</h3>
         <ul>
           <li><code>tpy new &lt;name&gt;</code> — create project</li>
+          <li><code>tpy new &lt;name&gt; --template &lt;t&gt;</code> — starter schema</li>
+          <li><code>tpy templates list | show</code></li>
+          <li><code>tpy studio</code> — visual builder (:4200)</li>
           <li><code>tpy build</code> — DB wizard + generate CRUD</li>
           <li><code>tpy build --skip-db</code> — generate using existing <code>.env</code></li>
           <li><code>tpy build --with-ui</code> — generate CRUD and <code>admin/</code></li>
+          <li><code>tpy make:model | make:controller | make:service</code></li>
           <li><code>tpy crud</code> — regenerate layers from schema only</li>
-          <li><code>tpy admin</code> — generate the React admin dashboard</li>
+          <li><code>tpy admin [--template]</code> — React admin dashboard</li>
           <li><code>tpy auth</code> — JWT auth, AuthRole + User, role seeds</li>
           <li><code>tpy doctor</code> — validate project files</li>
           <li><code>tpy version</code> — show framework version</li>

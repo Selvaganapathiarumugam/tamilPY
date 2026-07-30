@@ -1,12 +1,15 @@
 from pathlib import Path
 
 from tpy.generator.auth_generator import AuthGenerator
-from tpy.runtime.builder import Builder
 
 
 def test_auth_generation_adds_models_and_routes(tmp_path: Path):
     (tmp_path / "schema.tpy").write_text(
-        "database sqlite\n\nmodel Post {\n  id: uuid primary\n  title: string required\n}\n",
+        "database sqlite\n\n"
+        "model Post {\n"
+        "  id: uuid primary\n"
+        "  title: string required\n"
+        "}\n",
         encoding="utf-8",
     )
     (tmp_path / "requirements.txt").write_text("fastapi\n", encoding="utf-8")

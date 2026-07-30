@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { logout } from "../api/client.js";
 import { getRole } from "../auth/session.js";
+import { THEME_SUBTITLE, THEME_TITLE } from "../config.js";
 
 export default function Layout({ models }) {
   const navigate = useNavigate();
@@ -17,8 +18,8 @@ export default function Layout({ models }) {
         <div className="brand">
           <span className="brand-mark">TPY</span>
           <div>
-            <strong>Admin</strong>
-            <p className="brand-sub">tamilPY dashboard</p>
+            <strong>{THEME_TITLE}</strong>
+            <p className="brand-sub">{THEME_SUBTITLE}</p>
           </div>
         </div>
         <nav aria-label="Models">

@@ -41,8 +41,8 @@ class Console:
     def banner(version: str) -> None:
         """Print the tamilPY startup banner."""
         try:
-            from rich.panel import Panel
             from rich.console import Console as RichConsole
+            from rich.panel import Panel
 
             RichConsole().print(
                 Panel.fit(

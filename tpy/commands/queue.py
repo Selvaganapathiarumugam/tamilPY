@@ -53,7 +53,7 @@ def queue_work(
     ),
 ) -> None:
     """Run a queue worker."""
-    from tpy.queue import Queue, SyncQueueDriver, Worker
+    from tpy.queue import Queue, Worker
 
     queue_driver = _build_driver(driver, redis_url=redis_url)
     worker = Worker(Queue(queue_driver), sleep=sleep, once=once)

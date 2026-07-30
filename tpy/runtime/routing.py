@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class Route:
@@ -41,19 +42,27 @@ class Router:
         self.routes.append(route)
         return route
 
-    def get(self, path: str, handler: Callable[..., Any], name: str | None = None) -> Route:
+    def get(
+        self, path: str, handler: Callable[..., Any], name: str | None = None
+    ) -> Route:
         """Register a GET route."""
         return self.add("GET", path, handler, name)
 
-    def post(self, path: str, handler: Callable[..., Any], name: str | None = None) -> Route:
+    def post(
+        self, path: str, handler: Callable[..., Any], name: str | None = None
+    ) -> Route:
         """Register a POST route."""
         return self.add("POST", path, handler, name)
 
-    def put(self, path: str, handler: Callable[..., Any], name: str | None = None) -> Route:
+    def put(
+        self, path: str, handler: Callable[..., Any], name: str | None = None
+    ) -> Route:
         """Register a PUT route."""
         return self.add("PUT", path, handler, name)
 
-    def delete(self, path: str, handler: Callable[..., Any], name: str | None = None) -> Route:
+    def delete(
+        self, path: str, handler: Callable[..., Any], name: str | None = None
+    ) -> Route:
         """Register a DELETE route."""
         return self.add("DELETE", path, handler, name)
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tamilPY"
-version = "0.1.9"
+version = "0.1.10"
 description = "TamilPY Framework — schema-driven Python web framework"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -61,7 +61,7 @@ tpy = "tpy.cli:main"
 include = ["tpy*"]
 
 [tool.setuptools.package-data]
-tpy = ["templates/**/*", "py.typed"]
+tpy = ["templates/**/*", "studio/ui/dist/**/*", "py.typed"]
 
 [tool.setuptools]
 license-files = ["LICENSE"]

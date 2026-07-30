@@ -1,0 +1,55 @@
+database sqlite
+
+model Category {
+  id: uuid primary
+  name: string unique required
+  description: string nullable
+  relations {
+    has_many Ticket as tickets
+  }
+}
+
+model Agent {
+  id: uuid primary
+  name: string required
+  email: string unique required
+  active: bool default true
+  relations {
+    has_many Ticket as tickets
+  }
+}
+
+model SLA {
+  id: uuid primary
+  name: string required
+  response_hours: int default 24
+  priority: enum(low, medium, high, critical) default "medium"
+  relations {
+    has_many Ticket as tickets
+  }
+}
+
+model Ticket {
+  id: uuid primary
+  subject: string required
+  status: enum(open, pending, resolved, closed) default "open"
+  category_id: uuid references Category
+  agent_id: uuid references Agent
+  sla_id: uuid references SLA
+  relations {
+    belongs_to Category as category via category_id
+    belongs_to Agent as agent via agent_id
+    belongs_to SLA as sla via sla_id
+    has_many Comment as comments
+  }
+}
+
+model Comment {
+  id: uuid primary
+  ticket_id: uuid references Ticket
+  body: string required
+  is_public: bool default true
+  relations {
+    belongs_to Ticket as ticket via ticket_id
+  }
+}

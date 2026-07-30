@@ -1,0 +1,44 @@
+database sqlite
+
+model Company {
+  id: uuid primary
+  name: string required
+  industry: string nullable
+  relations {
+    has_many Contact as contacts
+  }
+}
+
+model Contact {
+  id: uuid primary
+  name: string required
+  email: string unique required
+  company_id: uuid references Company
+  relations {
+    belongs_to Company as company via company_id
+    has_many Deal as deals
+  }
+}
+
+model Deal {
+  id: uuid primary
+  title: string required
+  amount: float default 0
+  stage: enum(new, qualified, proposal, won, lost) default "new"
+  contact_id: uuid references Contact
+  relations {
+    belongs_to Contact as contact via contact_id
+    has_many Activity as activities
+  }
+}
+
+model Activity {
+  id: uuid primary
+  type: enum(call, email, meeting)
+  note: string nullable
+  deal_id: uuid references Deal
+  occurred_at: datetime
+  relations {
+    belongs_to Deal as deal via deal_id
+  }
+}

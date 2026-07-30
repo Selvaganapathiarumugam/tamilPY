@@ -4,6 +4,66 @@ All notable changes to **TamilPY Framework** are documented in this file.
 
 ---
 
+## [0.1.10] - 2026-07-30
+
+Studio visual builder, starter templates, incremental `make:*` commands, and shared schema serialize/validate foundation.
+
+**Docs:** [Studio](https://selvaganapathiarumugam.github.io/tamilPY/studio.html) · [Templates](https://selvaganapathiarumugam.github.io/tamilPY/templates.html) · [Make commands](https://selvaganapathiarumugam.github.io/tamilPY/make-commands.html)
+
+### Added — Studio foundation & UI
+
+- **Schema serializer** (`tpy.parser.serializer`) — deterministic `schema.tpy` emit; round-trip `parse → serialize → parse`.
+- **JSON AST bridge** (`tpy.parser.json_ast`) for Studio / tooling.
+- **Shared schema facade** (`tpy.schema`) — parse, serialize, validate with line-accurate diagnostics (`schema.tpy:<line> — …`, fuzzy “did you mean”).
+- **`tpy studio`** — local visual builder at `http://127.0.0.1:4200` (bind `127.0.0.1` by default).
+  - FastAPI API under `/api/studio/*` (schema preview/save, database, auth sidecar, SSE build/migrate/seed/serve, routes, templates).
+  - Vite + React SPA shipped as pre-built `tpy/studio/ui/dist/` (no end-user `npm install` required).
+  - Screens: Model Designer, Relations canvas, Database, Auth, Diff/preview, Build console, API Explorer, Templates.
+  - Auth config stored in `.tpy/studio.json` (not inside `schema.tpy`).
+  - Flags: `--port`, `--host`, `--no-open`, `--version`, `--template`.
+
+### Added — Starter templates
+
+- Five starters: `crm`, `institute-admin`, `inventory`, `helpdesk`, `blog-cms` (schema + `admin-theme.json` + seeds + README).
+- `tpy new <name> --template <template>`
+- `tpy templates list` / `tpy templates show <name>`
+- Admin theme presets (`title`, `accent`, `landing_model`) via project `admin-theme.json` or `tpy admin --template <name>`.
+
+### Added — Incremental make
+
+- `tpy make:model <Name> --fields "..."` — append to `schema.tpy` and generate **only that model’s** layers.
+- `tpy make:controller` / `tpy make:service` — regenerate one layer.
+- Generated-file markers `# tpy:generated:sha256:<hash>`; manual edits require `--force`.
+
+### Changed
+
+- `Builder.parse_schema` runs semantic validation before code generation.
+- Generated CRUD files include checksum markers (full `tpy build` / `tpy crud` still overwrite with force).
+- Package data includes `studio/ui/dist/**/*`.
+
+### CLI (new in 0.1.10)
+
+```bash
+tpy studio [--port 4200] [--host 127.0.0.1] [--no-open] [--template crm]
+tpy new myapp --template crm
+tpy templates list
+tpy templates show institute-admin
+tpy make:model Invoice --fields "amount:float,status:enum(draft,paid)"
+tpy make:controller Invoice
+tpy make:service Invoice [--force]
+tpy admin --template crm
+```
+
+### Upgrade
+
+```bash
+pip install --upgrade "tamilPY[all]"
+```
+
+Open Studio inside an existing project with `tpy studio`. Scaffold from a starter with `tpy new myapp --template crm`. Regenerate one model after schema edits with `tpy make:model` / `make:service` / `make:controller`.
+
+---
+
 ## [0.1.9] - 2026-07-29
 
 Schema-driven FastAPI platform release: Query Builder through watch mode (Features 1–20), richer CLI, and a professional GitHub Pages study-guide docs site.

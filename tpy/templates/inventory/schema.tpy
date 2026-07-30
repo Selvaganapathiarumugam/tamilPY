@@ -1,0 +1,58 @@
+database sqlite
+
+model Supplier {
+  id: uuid primary
+  name: string required
+  email: string unique required
+  phone: string nullable
+  relations {
+    has_many PurchaseOrder as purchase_orders
+  }
+}
+
+model Warehouse {
+  id: uuid primary
+  name: string required
+  location: string nullable
+  relations {
+    has_many StockMovement as movements
+  }
+}
+
+model Product {
+  id: uuid primary
+  sku: string unique required
+  name: string required
+  unit_cost: float default 0
+  status: enum(active, discontinued) default "active"
+  relations {
+    has_many StockMovement as movements
+    has_many PurchaseOrder as purchase_orders
+  }
+}
+
+model PurchaseOrder {
+  id: uuid primary
+  supplier_id: uuid references Supplier
+  product_id: uuid references Product
+  quantity: int required
+  status: enum(draft, ordered, received, cancelled) default "draft"
+  ordered_at: datetime
+  relations {
+    belongs_to Supplier as supplier via supplier_id
+    belongs_to Product as product via product_id
+  }
+}
+
+model StockMovement {
+  id: uuid primary
+  product_id: uuid references Product
+  warehouse_id: uuid references Warehouse
+  quantity: int required
+  kind: enum(in, out, adjust)
+  note: string nullable
+  relations {
+    belongs_to Product as product via product_id
+    belongs_to Warehouse as warehouse via warehouse_id
+  }
+}

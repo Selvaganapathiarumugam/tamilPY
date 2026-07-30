@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
 import re
 import secrets
+from pathlib import Path
 
 from tpy.runtime.builder import Builder
 from tpy.runtime.template_engine import TemplateEngine
 from tpy.utils.file_manager import FileManager
-
 
 AUTH_ROLE_BLOCK = """
 model AuthRole {

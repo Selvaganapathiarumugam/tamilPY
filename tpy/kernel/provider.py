@@ -4,14 +4,13 @@ Service provider contract.
 
 from __future__ import annotations
 
-from abc import ABC
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tpy.kernel.application import Application
 
 
-class ServiceProvider(ABC):
+class ServiceProvider:
     """
     Register and boot services into the application container.
 

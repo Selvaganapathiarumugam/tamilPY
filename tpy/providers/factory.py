@@ -3,7 +3,6 @@ from pathlib import Path
 from tpy.config.loader import ConfigLoader, Settings
 from tpy.providers.base import BaseProvider
 
-
 _EXTRA_HINTS = {
     "postgres": 'pip install "tamilPY[postgres]"',
     "postgresql": 'pip install "tamilPY[postgres]"',
